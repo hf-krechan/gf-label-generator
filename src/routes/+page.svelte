@@ -1,4 +1,7 @@
-<script>
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
+
   let selectedPart = '';
   let threadSize = '';
   let length = '';
@@ -9,6 +12,93 @@
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
   const materials = ['Stainless Steel A2', 'Stainless Steel A4', 'Zinc-Plated Steel', 'Black Oxide Steel'];
+
+  let showPreview = false;
+
+  // Add this reactive statement
+  $: showPreview = selectedPart === 'Screw' && 
+                   threadSize && 
+                   length && 
+                   standard && 
+                   material;
+
+  // Load saved data on component mount
+  onMount(() => {
+    if (browser) {
+      const savedData = localStorage.getItem('partLabelData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        selectedPart = data.selectedPart;
+        threadSize = data.threadSize;
+        length = data.length;
+        standard = data.standard;
+        material = data.material;
+      }
+    }
+  });
+
+  // Save data whenever any value changes
+  $: {
+    if (browser) {
+      const data = { selectedPart, threadSize, length, standard, material };
+      localStorage.setItem('partLabelData', JSON.stringify(data));
+    }
+  }
+
+  // Function to generate the label text (e.g., "M6x25")
+  function getLabelText() {
+    if (selectedPart === 'Screw' && threadSize && length) {
+      return `${threadSize}x${length}`;
+    }
+    return '';
+  }
+
+  // Function to get material text in German format
+  function getMaterialText() {
+    if (material === 'Zinc-Plated Steel') return 'Stahl vz';
+    // Add other material translations as needed
+    return material;
+  }
+
+  // Function to get the correct SVG path based on the standard
+  function getScrewImagePath(standard: string): string {
+    const standardLower = standard.toLowerCase().replace(' ', '');
+    return `/images/screws/${standardLower}.svg`;
+  }
+
+  async function downloadSVG() {
+    const svgElement = document.querySelector('.svg-preview svg');
+    if (!svgElement) return;
+    
+    // Fetch and convert screw image to base64
+    const screwResponse = await fetch(getScrewImagePath(standard));
+    const screwBlob = await screwResponse.blob();
+    const screwBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(screwBlob);
+    });
+
+    // Create a clone of the SVG and update the image href
+    const svgClone = svgElement.cloneNode(true) as SVGElement;
+    const imageElement = svgClone.querySelector('image');
+    if (imageElement) {
+      imageElement.setAttribute('href', screwBase64 as string);
+    }
+    
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgClone);
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(svgBlob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${threadSize}x${length}_${standard}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 </script>
 
 <main class="container">
@@ -89,6 +179,64 @@
       </div>
     </div>
   {/if}
+
+  {#if showPreview}
+    <div class="svg-preview">
+      <svg 
+        width="35mm" 
+        height="8.75mm" 
+        viewBox="0 0 350 87.5" 
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <!-- Background -->
+        <rect width="350" height="87.5" fill="#E0E0E0"/>
+        
+        <!-- Screw image -->
+        <image 
+          x="15" 
+          y="14"
+          width="90"
+          height="60"
+          href={getScrewImagePath(standard)}
+        />
+
+        <!-- Standard (DIN) in black box -->
+        <g transform="translate(300,0)">
+          <rect width="30" height="87.5" fill="black"/>
+          <text 
+            x="15" 
+            y="44" 
+            font-size="13" 
+            font-weight="bold" 
+            fill="white" 
+            text-anchor="middle"
+            transform="rotate(-90, 15, 44)"
+            font-family="Verdana"
+          >{standard}</text>
+        </g>
+
+        <!-- Text elements -->
+        <text 
+          x="280" 
+          y="40" 
+          font-size="35" 
+          font-weight="bold" 
+          font-family="Verdana"
+          text-anchor="end"
+        >{getLabelText()}</text>
+        <text 
+          x="280" 
+          y="70" 
+          font-size="12" 
+          font-family="Verdana"
+          text-anchor="end"
+        >{getMaterialText()}</text>
+      </svg>
+      <button class="download-button" on:click={downloadSVG}>
+        Download SVG
+      </button>
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -140,5 +288,31 @@
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
+  }
+
+  .svg-preview {
+    margin-top: 2rem;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    background: white;
+  }
+
+  svg {
+    width: 35mm;
+    height: 8.75mm;
+  }
+
+  .download-button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .download-button:hover {
+    background-color: #45a049;
   }
 </style>
