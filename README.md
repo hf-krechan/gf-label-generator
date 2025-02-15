@@ -1,22 +1,27 @@
-# sv
+# Screw Visualization App
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A web application for visualizing and exploring different types of screws, built with SvelteKit.
 
-## Creating a project
+## Setup
 
-If you're seeing this, you've probably already done this step. Congrats!
-
+1. Clone the repository:
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+git clone [repository-url]
+cd [repository-name]
 ```
 
-## Developing
+2. Install dependencies:
+```bash
+npm install
+# or
+pnpm install
+# or
+yarn install
+```
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Development
+
+To start the development server:
 
 ```bash
 npm run dev
@@ -25,14 +30,41 @@ npm run dev
 npm run dev -- --open
 ```
 
-## Building
+The app will be available at `http://localhost:5173` by default.
 
-To create a production version of your app:
+## Building for Production
+
+To create a production version of the app:
 
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+You can preview the production build with:
+```bash
+npm run preview
+```
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Features
+
+- Interactive 3D visualization of various screw types
+- Detailed specifications and measurements
+- Easy-to-use interface for exploring different screw variants
+
+## Technology Stack
+
+- SvelteKit - Frontend framework
+- Three.js - 3D visualization
+- TypeScript - Type safety and better developer experience
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
