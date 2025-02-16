@@ -111,6 +111,42 @@
 
   // Add toggle for margin visualization
   let showMargins = false;
+
+  // Validation functions
+  function validateNumber(value: string, min: number, max?: number): string {
+    const num = Number(value);
+    if (isNaN(num)) return 'Must be a number';
+    if (num < min) return `Must be at least ${min}`;
+    if (max && num > max) return `Must be less than ${max}`;
+    return '';
+  }
+
+  // Reactive validation
+  $: lengthError = length ? validateNumber(length, 1) : '';
+  $: horizontalMarginError = horizontalMargin ? validateNumber(horizontalMargin, 0, 30) : '';
+  $: verticalMarginError = verticalMargin ? validateNumber(verticalMargin, 0, 30) : '';
+
+  // Add state for input helper text
+  let lengthHelper = '';
+  let horizontalMarginHelper = '';
+  let verticalMarginHelper = '';
+
+  // Update input handler to show/hide helper text
+  function handleInput(event: Event, setter: (val: string) => void) {
+    const input = event.target as HTMLInputElement;
+    const originalValue = input.value;
+    const cleanValue = originalValue.replace(/[^\d]/g, '');
+    
+    // Show helper text if non-numeric characters were removed
+    const helperText = originalValue !== cleanValue ? 'Only numbers allowed' : '';
+    
+    // Update helper text based on input id
+    if (input.id === 'length') lengthHelper = helperText;
+    if (input.id === 'horizontal-margin') horizontalMarginHelper = helperText;
+    if (input.id === 'vertical-margin') verticalMarginHelper = helperText;
+    
+    setter(cleanValue);
+  }
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -141,12 +177,19 @@
       <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
       <input 
         id="length"
-        type="number"
-        min="1"
+        type="text"
+        inputmode="numeric"
         bind:value={length}
-        placeholder="Enter length in mm"
-        class="w-full rounded border border-gray-300 p-2 text-base"
+        on:input={(e) => handleInput(e, (val) => length = val)}
+        class="w-full rounded border border-gray-300 p-2 text-base {lengthError ? 'border-red-500' : ''}"
+        aria-invalid={Boolean(lengthError)}
       />
+      {#if lengthHelper}
+        <p class="mt-1 text-sm text-gray-500">{lengthHelper}</p>
+      {/if}
+      {#if lengthError}
+        <p class="mt-1 text-sm text-red-600">{lengthError}</p>
+      {/if}
     </div>
 
     <div class="mb-4">
@@ -175,25 +218,38 @@
         <label for="horizontal-margin" class="mb-2 block font-medium text-gray-700">Horizontal Margin (mm):</label>
         <input 
           id="horizontal-margin"
-          type="number"
-          min="0"
-          max="30"
+          type="text"
+          inputmode="numeric"
           bind:value={horizontalMargin}
-          placeholder="Left/Right margin"
-          class="w-full rounded border border-gray-300 p-2 text-base"
+          on:input={(e) => handleInput(e, (val) => horizontalMargin = val)}
+          class="w-full rounded border border-gray-300 p-2 text-base {horizontalMarginError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(horizontalMarginError)}
         />
+        {#if horizontalMarginHelper}
+          <p class="mt-1 text-sm text-gray-500">{horizontalMarginHelper}</p>
+        {/if}
+        {#if horizontalMarginError}
+          <p class="mt-1 text-sm text-red-600">{horizontalMarginError}</p>
+        {/if}
       </div>
       <div class="flex-1">
         <label for="vertical-margin" class="mb-2 block font-medium text-gray-700">Vertical Margin (mm):</label>
         <input 
           id="vertical-margin"
-          type="number"
-          min="0"
-          max="30"
+          type="text"
+          inputmode="numeric"
           bind:value={verticalMargin}
+          on:input={(e) => handleInput(e, (val) => verticalMargin = val)}
           placeholder="Top/Bottom margin"
-          class="w-full rounded border border-gray-300 p-2 text-base"
+          class="w-full rounded border border-gray-300 p-2 text-base {verticalMarginError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(verticalMarginError)}
         />
+        {#if verticalMarginHelper}
+          <p class="mt-1 text-sm text-gray-500">{verticalMarginHelper}</p>
+        {/if}
+        {#if verticalMarginError}
+          <p class="mt-1 text-sm text-red-600">{verticalMarginError}</p>
+        {/if}
       </div>
     </div>
 
@@ -230,15 +286,15 @@
           <rect 
             x="0" 
             y="0" 
-            width={horizontalMargin} 
+            width={Number(horizontalMargin) * 10} 
             height="120" 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Right margin -->
           <rect 
-            x={360 - Number(horizontalMargin)} 
+            x={360 - Number(horizontalMargin) * 10} 
             y="0" 
-            width={horizontalMargin} 
+            width={Number(horizontalMargin) * 10} 
             height="120" 
             fill="rgba(255,0,0,0.2)"
           />
@@ -247,7 +303,7 @@
             x="0" 
             y="0" 
             width="360" 
-            height={verticalMargin} 
+            height={Number(verticalMargin)} 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Bottom margin -->
@@ -255,7 +311,7 @@
             x="0" 
             y={120 - Number(verticalMargin)} 
             width="360" 
-            height={verticalMargin} 
+            height={Number(verticalMargin)} 
             fill="rgba(255,0,0,0.2)"
           />
         {/if}
@@ -287,7 +343,7 @@
 
         <!-- Text elements -->
         <text 
-          x={textXPosition}
+          x={Number(textXPosition)}
           y={Number(verticalMargin) + 40} 
           font-size="35" 
           font-weight="bold" 
@@ -295,7 +351,7 @@
           text-anchor="end"
         >{getLabelText()}</text>
         <text 
-          x={textXPosition}
+          x={Number(textXPosition)}
           y={Number(verticalMargin) + 90} 
           font-size="12" 
           font-family="Verdana"
