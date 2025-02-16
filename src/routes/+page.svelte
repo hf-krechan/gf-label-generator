@@ -2,6 +2,12 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
+  // SVG dimensions constants
+  const SVG_WIDTH = 360;
+  const SVG_HEIGHT = 120;
+  const VIEW_BOX_HEIGHT = SVG_HEIGHT;
+  const SCREW_IMAGE_HEIGHT = 70;
+
   // Initialize with stored values or empty strings
   let selectedPart = browser ? localStorage.getItem('selectedPart') || '' : '';
   let threadSize = browser ? localStorage.getItem('threadSize') || '' : '';
@@ -30,13 +36,15 @@
   $: if (browser && verticalMargin) localStorage.setItem('verticalMargin', verticalMargin);
   
   // Calculate effective dimensions based on margins
-  $: effectiveWidth = 360 - (Number(horizontalMargin) * 2);
-  $: effectiveHeight = 120 - (Number(verticalMargin) * 2);
+  $: effectiveWidth = SVG_WIDTH - (Number(horizontalMargin) * 10);
+  $: effectiveHeight = SVG_HEIGHT - (Number(verticalMargin) * 10);
   
   // Adjust x positions based on margin
-  $: screwXPosition = Number(horizontalMargin) + 15;
-  $: textXPosition = 360 - Number(horizontalMargin) - 60; // Adjust text position
-  $: standardXPosition = 360 - Number(horizontalMargin) - 30; // Adjust standard black box position
+  $: screwXPosition = Number(horizontalMargin) * 10 + 15;
+  $: textXPosition = effectiveWidth - 60;
+  $: standardXPosition = effectiveWidth - 30;
+
+  $: screwYPosition = (SVG_HEIGHT - SCREW_IMAGE_HEIGHT) / 2;
 
   // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
@@ -65,10 +73,6 @@
     const standardLower = standard.toLowerCase().replace(' ', '');
     return `/images/screws/${standardLower}.svg`;
   }
-
-  const VIEW_BOX_HEIGHT = 120;
-  const SCREW_IMAGE_HEIGHT = 70;
-  const screwYPosition = (VIEW_BOX_HEIGHT - SCREW_IMAGE_HEIGHT) / 2;
 
   async function downloadSVG() {
     // Update selector to match the SVG in the preview div
@@ -301,25 +305,29 @@
       <svg 
         width="140mm" 
         height="48mm" 
-        viewBox="0 0 360 120" 
+        viewBox="0 0 {SVG_WIDTH} {SVG_HEIGHT}" 
         preserveAspectRatio="xMidYMid meet"
         class="preview-svg"
       >
         <!-- Background -->
-        <rect width="360" height="120" fill="#E0E0E0"/>
+        <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#E0E0E0"/>
         
         <!-- Screw image -->
         <image 
           x={screwXPosition}
-          y={Number(verticalMargin) + screwYPosition}
+          y={Number(verticalMargin) * 10 + screwYPosition}
           height={SCREW_IMAGE_HEIGHT}
           preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
         />
 
         <!-- Standard (DIN) in black box -->
-        <g transform={`translate(${standardXPosition},${Number(verticalMargin)})`}>
-          <rect width="30" height={effectiveHeight} fill="black"/>
+        <g transform={`translate(${standardXPosition},${Number(verticalMargin) * 10})`}>
+          <rect 
+            width="30" 
+            height={effectiveHeight} 
+            fill="black"
+          />
           <text 
             x="15" 
             y={effectiveHeight / 2} 
@@ -335,16 +343,16 @@
 
         <!-- Text elements -->
         <text 
-          x={Number(textXPosition)}
-          y={Number(verticalMargin) + 40} 
+          x={textXPosition}
+          y={Number(verticalMargin) * 10 + 40} 
           font-size="35" 
           font-weight="bold" 
           font-family="Verdana"
           text-anchor="end"
         >{getLabelText()}</text>
         <text 
-          x={Number(textXPosition)}
-          y={Number(verticalMargin) + 90} 
+          x={textXPosition}
+          y={Number(verticalMargin) * 10 + 90} 
           font-size="12" 
           font-family="Verdana"
           text-anchor="end"
@@ -357,31 +365,31 @@
             x="0" 
             y="0" 
             width={Number(horizontalMargin) * 10} 
-            height="120" 
+            height={SVG_HEIGHT} 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Right margin -->
           <rect 
-            x={360 - Number(horizontalMargin) * 10} 
+            x={SVG_WIDTH - Number(horizontalMargin) * 10} 
             y="0" 
             width={Number(horizontalMargin) * 10} 
-            height="120" 
+            height={SVG_HEIGHT} 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Top margin -->
           <rect 
             x="0" 
             y="0" 
-            width="360" 
-            height={Number(verticalMargin)} 
+            width={SVG_WIDTH} 
+            height={Number(verticalMargin) * 10} 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Bottom margin -->
           <rect 
             x="0" 
-            y={120 - Number(verticalMargin)} 
-            width="360" 
-            height={Number(verticalMargin)} 
+            y={SVG_HEIGHT - Number(verticalMargin) * 10} 
+            width={SVG_WIDTH} 
+            height={Number(verticalMargin) * 10} 
             fill="rgba(255,0,0,0.2)"
           />
         {/if}
