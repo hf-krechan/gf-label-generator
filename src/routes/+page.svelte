@@ -82,7 +82,6 @@
   }
 
   async function downloadSVG() {
-    // Update selector to match the SVG in the preview div
     const svgElement = document.querySelector('.preview-svg');
     if (!svgElement) return;
     
@@ -90,6 +89,12 @@
     const svgClone = svgElement.cloneNode(true) as SVGElement;
     svgClone.setAttribute('width', '36mm');
     svgClone.setAttribute('height', '12mm');
+    
+    // Remove the background rectangle from the clone
+    const backgroundRect = svgClone.querySelector('rect[width="' + SVG_WIDTH + '"]');
+    if (backgroundRect) {
+        backgroundRect.remove();
+    }
     
     // Fetch and convert screw image to base64
     const screwResponse = await fetch(getScrewImagePath(standard));
