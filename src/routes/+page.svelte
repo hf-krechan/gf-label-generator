@@ -17,7 +17,7 @@
   
   // Add font size constants
   const LABEL_FONT_SIZE = 38;     // Size for the main label (e.g., "M6x25")
-  const MATERIAL_FONT_SIZE = 24;   // Size for the material text
+  const MATERIAL_FONT_SIZE = 20;   // Size for the material text
   const STANDARD_FONT_SIZE = 15;   // Size for the standard text in black box
 
   // Calculate scale based on desired width
