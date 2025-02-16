@@ -1,10 +1,9 @@
 <script lang="ts">
   import { browser } from '$app/environment';
 
-  // Physical dimensions constants - these will be our single source of truth
-  const PHYSICAL_WIDTH = 38;  // in mm
-  const PHYSICAL_HEIGHT = 12; // in mm
-  const MARGIN = 2;          // in mm
+  // Physical dimensions including margins
+  const PHYSICAL_WIDTH = 38;  // Already includes margins
+  const PHYSICAL_HEIGHT = 12; // Already includes margins
 
   // SVG viewport dimensions (used for internal coordinates)
   const SVG_WIDTH = PHYSICAL_WIDTH * 10;
@@ -378,8 +377,8 @@
       <h2 class="mb-4 text-xl font-semibold text-gray-700">Label Preview</h2>
       <svg 
         class="preview-svg"
-        width={`${PHYSICAL_WIDTH + 2 * MARGIN}mm`}
-        height={`${PHYSICAL_HEIGHT + 2 * MARGIN}mm`}
+        width={`${PHYSICAL_WIDTH}mm`}
+        height={`${PHYSICAL_HEIGHT}mm`}
         viewBox="0 0 {SVG_WIDTH} {SVG_HEIGHT}" 
         preserveAspectRatio="xMidYMid meet"
       >
