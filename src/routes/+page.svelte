@@ -13,7 +13,7 @@
   const SVG_HEIGHT = 120;
   const VIEW_BOX_HEIGHT = SVG_HEIGHT;
   const SCREW_IMAGE_HEIGHT = 80;
-  const SCREW_IMAGE_WIDTH = 120;
+  const SCREW_IMAGE_WIDTH = 140;
   const STANDARD_BOX_WIDTH = 30;  // Width of the black box
   
   // Add font size constants
@@ -63,7 +63,7 @@
   $: standardXPosition = effectiveWidth - STANDARD_BOX_WIDTH + horizontalMargin * 10;
   $: textXPosition = standardXPosition - textGap;
 
-  $: screwYPosition = (SVG_HEIGHT - SCREW_IMAGE_HEIGHT) / 2;
+  $: screwYPosition = verticalMargin * 10 + (effectiveHeight - SCREW_IMAGE_HEIGHT) / 2;
 
   // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
@@ -93,6 +93,28 @@
     return `/images/screws/${standardLower}.svg`;
   }
 
+  // Add a variable to store the SVG content
+  let screwSvgContent = '';
+
+  // Modify the function to fetch SVG content
+  async function fetchScrewSvg(standard: string) {
+    try {
+      const response = await fetch(getScrewImagePath(standard));
+      const svgText = await response.text();
+      // Extract the content inside the svg tags
+      const match = svgText.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
+      screwSvgContent = match ? match[1] : '';
+    } catch (error) {
+      console.error('Error loading SVG:', error);
+    }
+  }
+
+  // Watch standard changes to update SVG content
+  $: if (standard) {
+    fetchScrewSvg(standard);
+  }
+
+  // Update the download function to not need base64 conversion
   async function downloadSVG() {
     const svgElement = document.querySelector('.preview-svg');
     if (!svgElement) return;
@@ -106,21 +128,6 @@
     const backgroundRect = svgClone.querySelector('rect[width="' + SVG_WIDTH + '"]');
     if (backgroundRect) {
         backgroundRect.remove();
-    }
-    
-    // Fetch and convert screw image to base64
-    const screwResponse = await fetch(getScrewImagePath(standard));
-    const screwBlob = await screwResponse.blob();
-    const screwBase64 = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(screwBlob);
-    });
-
-    // Create a clone of the SVG and update the image href
-    const imageElement = svgClone.querySelector('image');
-    if (imageElement) {
-      imageElement.setAttribute('href', screwBase64 as string);
     }
     
     const serializer = new XMLSerializer();
@@ -375,14 +382,13 @@
         <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#E0E0E0"/>
         
         <!-- Screw image -->
-        <image 
-          x={screwXPosition}
-          y={screwYPosition}
-          width={SCREW_IMAGE_WIDTH}
-          height={SCREW_IMAGE_HEIGHT}
-          preserveAspectRatio="xMinYMid"
-          href={getScrewImagePath(standard)}
-        />
+        {#if screwSvgContent}
+          <g 
+            transform="translate({screwXPosition} {screwYPosition})"
+          >
+            {@html screwSvgContent}
+          </g>
+        {/if}
 
         <!-- Standard (DIN) in black box -->
         <g transform={`translate(${standardXPosition},${verticalMargin * 10})`}>
