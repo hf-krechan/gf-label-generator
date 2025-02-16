@@ -174,17 +174,17 @@
       <svg 
         width="140mm" 
         height="48mm" 
-        viewBox="0 0 350 120" 
+        viewBox="0 0 360 120" 
         preserveAspectRatio="xMidYMid meet"
         class="preview-svg"
       >
         <!-- Background -->
-        <rect width="350" height="120" fill="#E0E0E0"/>
+        <rect width="360" height="120" fill="#E0E0E0"/>
         
         <!-- Screw image -->
         <image 
           x="15" 
-          y="10"
+          y="25"
           height="70"
           preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
