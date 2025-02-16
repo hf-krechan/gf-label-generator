@@ -16,8 +16,8 @@
   let material = browser ? localStorage.getItem('material') || '' : '';
   
   // Add new margin controls with default values
-  let horizontalMargin = browser ? localStorage.getItem('horizontalMargin') || '2' : '2';
-  let verticalMargin = browser ? localStorage.getItem('verticalMargin') || '2' : '2';
+  let horizontalMargin = browser ? Number(localStorage.getItem('horizontalMargin')) || 2 : 2;
+  let verticalMargin = browser ? Number(localStorage.getItem('verticalMargin')) || 2 : 2;
   
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
@@ -31,16 +31,16 @@
   $: if (browser && standard) localStorage.setItem('standard', standard);
   $: if (browser && material) localStorage.setItem('material', material);
   
-  // Save margin values
-  $: if (browser && horizontalMargin) localStorage.setItem('horizontalMargin', horizontalMargin);
-  $: if (browser && verticalMargin) localStorage.setItem('verticalMargin', verticalMargin);
+  // Save margin values as strings in localStorage
+  $: if (browser) localStorage.setItem('horizontalMargin', horizontalMargin.toString());
+  $: if (browser) localStorage.setItem('verticalMargin', verticalMargin.toString());
   
   // Calculate effective dimensions based on margins
-  $: effectiveWidth = SVG_WIDTH - (Number(horizontalMargin) * 10);
-  $: effectiveHeight = SVG_HEIGHT - (Number(verticalMargin) * 10);
+  $: effectiveWidth = SVG_WIDTH - (horizontalMargin * 10);
+  $: effectiveHeight = SVG_HEIGHT - (verticalMargin * 10);
   
   // Adjust x positions based on margin
-  $: screwXPosition = Number(horizontalMargin) * 10 + 15;
+  $: screwXPosition = horizontalMargin * 10 + 15;
   $: textXPosition = effectiveWidth - 60;
   $: standardXPosition = effectiveWidth - 30;
 
@@ -127,8 +127,8 @@
 
   // Reactive validation
   $: lengthError = length ? validateNumber(length, 1) : '';
-  $: horizontalMarginError = horizontalMargin ? validateNumber(horizontalMargin, 0, 30) : '';
-  $: verticalMarginError = verticalMargin ? validateNumber(verticalMargin, 0, 30) : '';
+  $: horizontalMarginError = horizontalMargin ? validateNumber(horizontalMargin.toString(), 0, 30) : '';
+  $: verticalMarginError = verticalMargin ? validateNumber(verticalMargin.toString(), 0, 30) : '';
 
   // Add state for input helper text
   let lengthHelper = '';
@@ -150,6 +150,13 @@
     if (input.id === 'vertical-margin') verticalMarginHelper = helperText;
     
     setter(cleanValue);
+  }
+
+  // In the input handlers, convert string to number
+  function handleMarginInput(event: Event, setter: (val: number) => void) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/[^\d]/g, '');
+    setter(Number(value));
   }
 </script>
 
@@ -315,17 +322,17 @@
         <!-- Screw image -->
         <image 
           x={screwXPosition}
-          y={Number(verticalMargin) * 10 + screwYPosition}
+          y={verticalMargin * 10 + screwYPosition}
           height={SCREW_IMAGE_HEIGHT}
           preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
         />
 
         <!-- Standard (DIN) in black box -->
-        <g transform={`translate(${standardXPosition},${Number(verticalMargin) * 10})`}>
+        <g transform={`translate(${standardXPosition},${verticalMargin * 10})`}>
           <rect 
             width="30" 
-            height={effectiveHeight} 
+            height={effectiveHeight - 10}
             fill="black"
           />
           <text 
@@ -344,7 +351,7 @@
         <!-- Text elements -->
         <text 
           x={textXPosition}
-          y={Number(verticalMargin) * 10 + 40} 
+          y={verticalMargin * 10 + 40} 
           font-size="35" 
           font-weight="bold" 
           font-family="Verdana"
@@ -352,7 +359,7 @@
         >{getLabelText()}</text>
         <text 
           x={textXPosition}
-          y={Number(verticalMargin) * 10 + 90} 
+          y={verticalMargin * 10 + 90} 
           font-size="12" 
           font-family="Verdana"
           text-anchor="end"
@@ -364,15 +371,15 @@
           <rect 
             x="0" 
             y="0" 
-            width={Number(horizontalMargin) * 10} 
+            width={horizontalMargin * 10} 
             height={SVG_HEIGHT} 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Right margin -->
           <rect 
-            x={SVG_WIDTH - Number(horizontalMargin) * 10} 
+            x={SVG_WIDTH - horizontalMargin * 10} 
             y="0" 
-            width={Number(horizontalMargin) * 10} 
+            width={horizontalMargin * 10} 
             height={SVG_HEIGHT} 
             fill="rgba(255,0,0,0.2)"
           />
@@ -381,15 +388,15 @@
             x="0" 
             y="0" 
             width={SVG_WIDTH} 
-            height={Number(verticalMargin) * 10} 
+            height={verticalMargin * 10} 
             fill="rgba(255,0,0,0.2)"
           />
           <!-- Bottom margin -->
           <rect 
             x="0" 
-            y={SVG_HEIGHT - Number(verticalMargin) * 10} 
+            y={SVG_HEIGHT - verticalMargin * 10} 
             width={SVG_WIDTH} 
-            height={Number(verticalMargin) * 10} 
+            height={verticalMargin * 10} 
             fill="rgba(255,0,0,0.2)"
           />
         {/if}
