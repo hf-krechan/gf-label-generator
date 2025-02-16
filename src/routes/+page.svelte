@@ -138,6 +138,18 @@
     </div>
 
     <div class="mb-4">
+      <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
+      <input 
+        id="length"
+        type="number"
+        min="1"
+        bind:value={length}
+        placeholder="Enter length in mm"
+        class="w-full rounded border border-gray-300 p-2 text-base"
+      />
+    </div>
+
+    <div class="mb-4">
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
@@ -155,18 +167,6 @@
           <option value={mat}>{mat}</option>
         {/each}
       </select>
-    </div>
-
-    <div class="mb-4">
-      <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
-      <input 
-        id="length"
-        type="number"
-        min="1"
-        bind:value={length}
-        placeholder="Enter length in mm"
-        class="w-full rounded border border-gray-300 p-2 text-base"
-      />
     </div>
 
     <!-- Add after the length input, but before the preview section -->
@@ -210,31 +210,10 @@
     </div>
   {/if}
 
-  {#if selectedPart}
-    <div class="mt-8 rounded border border-gray-300 p-4">
-      <h2 class="mb-4 text-xl font-semibold text-gray-700">Label Preview:</h2>
-      <div class="rounded bg-gray-100 p-4">
-        <p class="mb-2">{selectedPart}</p>
-        {#if selectedPart === 'Screw'}
-          {#if threadSize}
-            <p class="mb-2">Thread: {threadSize}</p>
-          {/if}
-          {#if length}
-            <p class="mb-2">Length: {length}mm</p>
-          {/if}
-          {#if standard}
-            <p class="mb-2">Standard: {standard}</p>
-          {/if}
-          {#if material}
-            <p class="mb-2">Material: {material}</p>
-          {/if}
-        {/if}
-      </div>
-    </div>
-  {/if}
 
   {#if showPreview}
     <div class="mt-8 rounded border border-gray-300 bg-white p-4">
+      <h2 class="mb-4 text-xl font-semibold text-gray-700">Label Preview</h2>
       <svg 
         width="140mm" 
         height="48mm" 
