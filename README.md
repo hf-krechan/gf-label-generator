@@ -57,6 +57,30 @@ npm run preview
 - Three.js - 3D visualization
 - TypeScript - Type safety and better developer experience
 
+## Image Guidelines
+
+### Technical Specifications
+
+- Image Format: SVG (created in Inkscape)
+- Dimensions: 95mm × 50mm (width × height)
+- Stroke Width: 1.25mm
+- Resolution: Vector-based for optimal scaling
+- Location: `static/images/screws/`, `static/images/washers/`, `static/images/nuts/`
+
+### Best Practices
+
+- Use metric units (mm) for consistency with engineering standards
+- Ensure drawings are to scale
+- Include key measurements and specifications
+- Use black strokes on white background for optimal print quality
+- Export as optimized SVG for web use
+
+### File Naming Convention
+
+- Screws: `[standard]-[type].svg` (e.g., `din912.svg`)
+- Washers: `washer-[type].svg`
+- Nuts: `nut-[type].svg`
+
 ## Contributing
 
 1. Fork the repository
