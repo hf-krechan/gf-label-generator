@@ -7,6 +7,7 @@
   const SVG_HEIGHT = 120;
   const VIEW_BOX_HEIGHT = SVG_HEIGHT;
   const SCREW_IMAGE_HEIGHT = 70;
+  const STANDARD_BOX_WIDTH = 30;  // Width of the black box
 
   // Initialize with stored values or empty strings
   let selectedPart = browser ? localStorage.getItem('selectedPart') || '' : '';
@@ -17,7 +18,7 @@
   
   // Add new margin controls with default values
   let horizontalMargin = browser ? Number(localStorage.getItem('horizontalMargin')) || 2 : 2;
-  let verticalMargin = browser ? Number(localStorage.getItem('verticalMargin')) || 2 : 2;
+  let verticalMargin = browser ? Number(localStorage.getItem('verticalMargin')) || 1 : 1;
   
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
@@ -36,13 +37,13 @@
   $: if (browser) localStorage.setItem('verticalMargin', verticalMargin.toString());
   
   // Calculate effective dimensions based on margins
-  $: effectiveWidth = SVG_WIDTH - (horizontalMargin * 10);
-  $: effectiveHeight = SVG_HEIGHT - (verticalMargin * 10);
+  $: effectiveWidth = SVG_WIDTH - 2 * (horizontalMargin * 10);
+  $: effectiveHeight = SVG_HEIGHT - 2 * (verticalMargin * 10);
   
   // Adjust x positions based on margin
-  $: screwXPosition = horizontalMargin * 10 + 15;
-  $: textXPosition = effectiveWidth - 60;
-  $: standardXPosition = effectiveWidth - 30;
+  $: screwXPosition = horizontalMargin * 10;
+  $: standardXPosition = effectiveWidth - STANDARD_BOX_WIDTH + horizontalMargin * 10;
+  $: textXPosition = standardXPosition - 30; // 30px gap between text and black box
 
   $: screwYPosition = (SVG_HEIGHT - SCREW_IMAGE_HEIGHT) / 2;
 
@@ -322,7 +323,7 @@
         <!-- Screw image -->
         <image 
           x={screwXPosition}
-          y={verticalMargin * 10 + screwYPosition}
+          y={screwYPosition}
           height={SCREW_IMAGE_HEIGHT}
           preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
@@ -331,19 +332,19 @@
         <!-- Standard (DIN) in black box -->
         <g transform={`translate(${standardXPosition},${verticalMargin * 10})`}>
           <rect 
-            width="30" 
-            height={effectiveHeight - 10}
+            width={STANDARD_BOX_WIDTH}
+            height={effectiveHeight}
             fill="black"
           />
           <text 
-            x="15" 
-            y={effectiveHeight / 2} 
+            x={STANDARD_BOX_WIDTH/2}
+            y={effectiveHeight/2} 
             font-size="13" 
             font-weight="bold" 
             fill="white" 
             text-anchor="middle"
             dominant-baseline="middle"
-            transform={`rotate(-90, 15, ${effectiveHeight / 2})`}
+            transform={`rotate(-90, ${STANDARD_BOX_WIDTH/2}, ${effectiveHeight/2})`}
             font-family="Verdana"
           >{standard}</text>
         </g>
