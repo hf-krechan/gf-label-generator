@@ -49,6 +49,10 @@
     return `/images/screws/${standardLower}.svg`;
   }
 
+  const VIEW_BOX_HEIGHT = 120;
+  const SCREW_IMAGE_HEIGHT = 70;
+  const screwYPosition = (VIEW_BOX_HEIGHT - SCREW_IMAGE_HEIGHT) / 2;
+
   async function downloadSVG() {
     // Update selector to match the SVG in the preview div
     const svgElement = document.querySelector('.preview-svg');
@@ -184,8 +188,8 @@
         <!-- Screw image -->
         <image 
           x="15" 
-          y="25"
-          height="70"
+          y={screwYPosition}
+          height={SCREW_IMAGE_HEIGHT}
           preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
         />
