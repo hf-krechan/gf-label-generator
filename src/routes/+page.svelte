@@ -2,17 +2,17 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
-  // Physical dimensions constants
-  const PHYSICAL_WIDTH = "38mm";  // 36mm + 2mm for the margin
-  const PHYSICAL_HEIGHT = "12mm";
-  const PREVIEW_WIDTH = "140mm";
-  const PREVIEW_HEIGHT = "48mm";
+  // Physical dimensions constants - these will be our single source of truth
+  const PHYSICAL_WIDTH = 36;  // in mm
+  const PHYSICAL_HEIGHT = 12; // in mm
+  const MARGIN = 2;          // in mm
 
-  // SVG dimensions constants
+  // SVG viewport dimensions (used for internal coordinates)
   const SVG_WIDTH = 360;
   const SVG_HEIGHT = 120;
-  const VIEW_BOX_HEIGHT = SVG_HEIGHT;
-  const SCREW_IMAGE_HEIGHT = 80;
+
+  // SVG dimensions constants
+  const SCREW_IMAGE_HEIGHT = 120;
   const SCREW_IMAGE_WIDTH = 140;
   const STANDARD_BOX_WIDTH = 30;  // Width of the black box
   
@@ -63,7 +63,7 @@
   $: standardXPosition = effectiveWidth - STANDARD_BOX_WIDTH + horizontalMargin * 10;
   $: textXPosition = standardXPosition - textGap;
 
-  $: screwYPosition = verticalMargin * 10 + (effectiveHeight - SCREW_IMAGE_HEIGHT) / 2;
+  $: screwYPosition = SVG_HEIGHT / 2 - 50;
 
   // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
@@ -114,15 +114,13 @@
     fetchScrewSvg(standard);
   }
 
-  // Update the download function to not need base64 conversion
+  // Update the download function to be simpler
   async function downloadSVG() {
     const svgElement = document.querySelector('.preview-svg');
     if (!svgElement) return;
     
-    // Create clone and set original dimensions for download
+    // Create clone of the SVG
     const svgClone = svgElement.cloneNode(true) as SVGElement;
-    svgClone.setAttribute('width', PHYSICAL_WIDTH);
-    svgClone.setAttribute('height', PHYSICAL_HEIGHT);
     
     // Remove the background rectangle from the clone
     const backgroundRect = svgClone.querySelector('rect[width="' + SVG_WIDTH + '"]');
@@ -372,11 +370,11 @@
     <div class="mt-8 rounded border border-gray-300 bg-white p-4">
       <h2 class="mb-4 text-xl font-semibold text-gray-700">Label Preview</h2>
       <svg 
-        width={PREVIEW_WIDTH}
-        height={PREVIEW_HEIGHT}
+        class="preview-svg"
+        width={`${PHYSICAL_WIDTH + 2 * MARGIN}mm`}
+        height={`${PHYSICAL_HEIGHT + 2 * MARGIN}mm`}
         viewBox="0 0 {SVG_WIDTH} {SVG_HEIGHT}" 
         preserveAspectRatio="xMidYMid meet"
-        class="preview-svg"
       >
         <!-- Background -->
         <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#E0E0E0"/>
@@ -385,6 +383,7 @@
         {#if screwSvgContent}
           <g 
             transform="translate({screwXPosition} {screwYPosition})"
+            
           >
             {@html screwSvgContent}
           </g>
@@ -474,14 +473,9 @@
 </main>
 
 <style>
-  /* Keep only SVG-specific styles */
   .preview-svg {
+    /* Make preview larger for better visibility */
     width: 140mm;
     height: 48mm;
-  }
-
-  svg {
-    width: 36mm;
-    height: 12mm;
   }
 </style>
