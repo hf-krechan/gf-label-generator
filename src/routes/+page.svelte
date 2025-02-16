@@ -280,42 +280,6 @@
         <!-- Background -->
         <rect width="360" height="120" fill="#E0E0E0"/>
         
-        <!-- Margin visualization -->
-        {#if showMargins}
-          <!-- Left margin -->
-          <rect 
-            x="0" 
-            y="0" 
-            width={Number(horizontalMargin) * 10} 
-            height="120" 
-            fill="rgba(255,0,0,0.2)"
-          />
-          <!-- Right margin -->
-          <rect 
-            x={360 - Number(horizontalMargin) * 10} 
-            y="0" 
-            width={Number(horizontalMargin) * 10} 
-            height="120" 
-            fill="rgba(255,0,0,0.2)"
-          />
-          <!-- Top margin -->
-          <rect 
-            x="0" 
-            y="0" 
-            width="360" 
-            height={Number(verticalMargin)} 
-            fill="rgba(255,0,0,0.2)"
-          />
-          <!-- Bottom margin -->
-          <rect 
-            x="0" 
-            y={120 - Number(verticalMargin)} 
-            width="360" 
-            height={Number(verticalMargin)} 
-            fill="rgba(255,0,0,0.2)"
-          />
-        {/if}
-        
         <!-- Screw image -->
         <image 
           x={screwXPosition}
@@ -357,6 +321,42 @@
           font-family="Verdana"
           text-anchor="end"
         >{getMaterialText()}</text>
+
+        <!-- Margin visualization -->
+        {#if showMargins}
+          <!-- Left margin -->
+          <rect 
+            x="0" 
+            y="0" 
+            width={Number(horizontalMargin) * 10} 
+            height="120" 
+            fill="rgba(255,0,0,0.2)"
+          />
+          <!-- Right margin -->
+          <rect 
+            x={360 - Number(horizontalMargin) * 10} 
+            y="0" 
+            width={Number(horizontalMargin) * 10} 
+            height="120" 
+            fill="rgba(255,0,0,0.2)"
+          />
+          <!-- Top margin -->
+          <rect 
+            x="0" 
+            y="0" 
+            width="360" 
+            height={Number(verticalMargin)} 
+            fill="rgba(255,0,0,0.2)"
+          />
+          <!-- Bottom margin -->
+          <rect 
+            x="0" 
+            y={120 - Number(verticalMargin)} 
+            width="360" 
+            height={Number(verticalMargin)} 
+            fill="rgba(255,0,0,0.2)"
+          />
+        {/if}
       </svg>
       <button 
         class="mt-4 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
