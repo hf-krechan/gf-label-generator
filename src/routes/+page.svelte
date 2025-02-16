@@ -20,6 +20,9 @@
   let horizontalMargin = browser ? Number(localStorage.getItem('horizontalMargin')) || 2 : 2;
   let verticalMargin = browser ? Number(localStorage.getItem('verticalMargin')) || 1 : 1;
   
+  // Add new gap control with default value
+  let textGap = browser ? Number(localStorage.getItem('textGap')) || 10 : 10;
+  
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
@@ -36,6 +39,9 @@
   $: if (browser) localStorage.setItem('horizontalMargin', horizontalMargin.toString());
   $: if (browser) localStorage.setItem('verticalMargin', verticalMargin.toString());
   
+  // Save gap value in localStorage
+  $: if (browser) localStorage.setItem('textGap', textGap.toString());
+  
   // Calculate effective dimensions based on margins
   $: effectiveWidth = SVG_WIDTH - 2 * (horizontalMargin * 10);
   $: effectiveHeight = SVG_HEIGHT - 2 * (verticalMargin * 10);
@@ -43,7 +49,7 @@
   // Adjust x positions based on margin
   $: screwXPosition = horizontalMargin * 10;
   $: standardXPosition = effectiveWidth - STANDARD_BOX_WIDTH + horizontalMargin * 10;
-  $: textXPosition = standardXPosition - 30; // 30px gap between text and black box
+  $: textXPosition = standardXPosition - textGap;
 
   $: screwYPosition = (SVG_HEIGHT - SCREW_IMAGE_HEIGHT) / 2;
 
@@ -130,11 +136,13 @@
   $: lengthError = length ? validateNumber(length, 1) : '';
   $: horizontalMarginError = horizontalMargin ? validateNumber(horizontalMargin.toString(), 0, 30) : '';
   $: verticalMarginError = verticalMargin ? validateNumber(verticalMargin.toString(), 0, 30) : '';
+  $: textGapError = textGap ? validateNumber(textGap.toString(), 0, 100) : '';
 
   // Add state for input helper text
   let lengthHelper = '';
   let horizontalMarginHelper = '';
   let verticalMarginHelper = '';
+  let textGapHelper = '';
 
   // Update input handler to show/hide helper text
   function handleInput(event: Event, setter: (val: string) => void) {
@@ -149,6 +157,7 @@
     if (input.id === 'length') lengthHelper = helperText;
     if (input.id === 'horizontal-margin') horizontalMarginHelper = helperText;
     if (input.id === 'vertical-margin') verticalMarginHelper = helperText;
+    if (input.id === 'text-gap') textGapHelper = helperText;
     
     setter(cleanValue);
   }
@@ -289,6 +298,34 @@
         {/if}
         {#if verticalMarginError}
           <p class="mt-1 text-sm text-red-600">{verticalMarginError}</p>
+        {/if}
+      </div>
+      <div class="flex-1">
+        <label for="text-gap" class="mb-2 block font-medium text-gray-700">Text Gap (mm):</label>
+        <input 
+          id="text-gap"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={textGap}
+          on:beforeinput={(e) => {
+            if (!/^\d*$/.test(e.data || '')) {
+              e.preventDefault();
+              textGapHelper = 'Only numbers allowed';
+            } else {
+              textGapHelper = '';
+            }
+          }}
+          placeholder="Text distance"
+          class="w-full rounded border border-gray-300 p-2 text-base {textGapError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(textGapError)}
+        />
+        {#if textGapHelper}
+          <p class="mt-1 text-sm text-gray-500">{textGapHelper}</p>
+        {/if}
+        {#if textGapError}
+          <p class="mt-1 text-sm text-red-600">{textGapError}</p>
         {/if}
       </div>
     </div>
