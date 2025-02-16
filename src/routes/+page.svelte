@@ -67,7 +67,8 @@
   }
 
   async function downloadSVG() {
-    const svgElement = document.querySelector('.svg-preview svg');
+    // Update selector to match the SVG in the preview div
+    const svgElement = document.querySelector('.preview-svg');
     if (!svgElement) return;
     
     // Create clone and set original dimensions for download
@@ -200,9 +201,9 @@
         <!-- Screw image -->
         <image 
           x="15" 
-          y="30"
+          y="10"
           width="90"
-          height="60"
+          height="100"
           href={getScrewImagePath(standard)}
         />
 
