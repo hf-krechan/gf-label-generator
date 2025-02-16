@@ -105,12 +105,12 @@
   }
 </script>
 
-<main class="container">
-  <h1>Hardware Part Label Creator</h1>
+<main class="container mx-auto max-w-2xl p-8">
+  <h1 class="mb-8 text-center text-2xl font-bold text-gray-800">Hardware Part Label Creator</h1>
   
-  <div class="part-selection">
-    <label for="part-type">Select Part Type:</label>
-    <select id="part-type" bind:value={selectedPart}>
+  <div class="mb-4">
+    <label for="part-type" class="mb-2 block font-medium text-gray-700">Select Part Type:</label>
+    <select id="part-type" bind:value={selectedPart} class="w-full rounded border border-gray-300 p-2 text-base">
       <option value="">Choose a part...</option>
       {#each partTypes as part}
         <option value={part}>{part}</option>
@@ -119,9 +119,9 @@
   </div>
 
   {#if selectedPart === 'Screw'}
-    <div class="thread-selection">
-      <label for="thread-size">Select Thread Size:</label>
-      <select id="thread-size" bind:value={threadSize}>
+    <div class="mb-4">
+      <label for="thread-size" class="mb-2 block font-medium text-gray-700">Select Thread Size:</label>
+      <select id="thread-size" bind:value={threadSize} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose size...</option>
         {#each threadSizes as size}
           <option value={size}>{size}</option>
@@ -129,9 +129,9 @@
       </select>
     </div>
 
-    <div class="standard-selection">
-      <label for="standard">Select Standard:</label>
-      <select id="standard" bind:value={standard}>
+    <div class="mb-4">
+      <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
+      <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
         {#each standards as std}
           <option value={std}>{std}</option>
@@ -139,9 +139,9 @@
       </select>
     </div>
 
-    <div class="material-selection">
-      <label for="material">Select Material:</label>
-      <select id="material" bind:value={material}>
+    <div class="mb-4">
+      <label for="material" class="mb-2 block font-medium text-gray-700">Select Material:</label>
+      <select id="material" bind:value={material} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose material...</option>
         {#each materials as mat}
           <option value={mat}>{mat}</option>
@@ -149,35 +149,36 @@
       </select>
     </div>
 
-    <div class="length-input">
-      <label for="length">Screw Length (mm):</label>
+    <div class="mb-4">
+      <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
       <input 
         id="length"
         type="number"
         min="1"
         bind:value={length}
         placeholder="Enter length in mm"
+        class="w-full rounded border border-gray-300 p-2 text-base"
       />
     </div>
   {/if}
 
   {#if selectedPart}
-    <div class="preview">
-      <h2>Label Preview:</h2>
-      <div class="label">
-        <p>{selectedPart}</p>
+    <div class="mt-8 rounded border border-gray-300 p-4">
+      <h2 class="mb-4 text-xl font-semibold text-gray-700">Label Preview:</h2>
+      <div class="rounded bg-gray-100 p-4">
+        <p class="mb-2">{selectedPart}</p>
         {#if selectedPart === 'Screw'}
           {#if threadSize}
-            <p>Thread: {threadSize}</p>
+            <p class="mb-2">Thread: {threadSize}</p>
           {/if}
           {#if length}
-            <p>Length: {length}mm</p>
+            <p class="mb-2">Length: {length}mm</p>
           {/if}
           {#if standard}
-            <p>Standard: {standard}</p>
+            <p class="mb-2">Standard: {standard}</p>
           {/if}
           {#if material}
-            <p>Material: {material}</p>
+            <p class="mb-2">Material: {material}</p>
           {/if}
         {/if}
       </div>
@@ -185,7 +186,7 @@
   {/if}
 
   {#if showPreview}
-    <div class="svg-preview">
+    <div class="mt-8 rounded border border-gray-300 bg-white p-4">
       <svg 
         width="140mm" 
         height="48mm" 
@@ -199,7 +200,7 @@
         <!-- Screw image -->
         <image 
           x="15" 
-          y="14"
+          y="30"
           width="90"
           height="60"
           href={getScrewImagePath(standard)}
@@ -232,13 +233,16 @@
         >{getLabelText()}</text>
         <text 
           x="280" 
-          y="70" 
+          y="90" 
           font-size="12" 
           font-family="Verdana"
           text-anchor="end"
         >{getMaterialText()}</text>
       </svg>
-      <button class="download-button" on:click={downloadSVG}>
+      <button 
+        class="mt-4 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+        on:click={downloadSVG}
+      >
         Download SVG
       </button>
     </div>
@@ -246,63 +250,7 @@
 </main>
 
 <style>
-  .container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-
-  .part-selection, .thread-selection, .standard-selection, .material-selection {
-    margin: 1rem 0;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-  }
-
-  .preview {
-    margin-top: 2rem;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  .label {
-    background-color: #f5f5f5;
-    padding: 1rem;
-    border-radius: 4px;
-  }
-
-  .label p {
-    margin: 0.5rem 0;
-  }
-
-  .length-input {
-    margin: 1rem 0;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-
-  .svg-preview {
-    margin-top: 2rem;
-    border: 1px solid #ccc;
-    padding: 1rem;
-    background: white;
-  }
-
+  /* Keep only SVG-specific styles */
   .preview-svg {
     width: 140mm;
     height: 48mm;
@@ -311,19 +259,5 @@
   svg {
     width: 35mm;
     height: 12mm;
-  }
-
-  .download-button {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .download-button:hover {
-    background-color: #45a049;
   }
 </style>
