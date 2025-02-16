@@ -2,48 +2,31 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
-  let selectedPart = '';
-  let threadSize = '';
-  let length = '';
-  let standard = '';
-  let material = '';
+  // Initialize with stored values or empty strings
+  let selectedPart = browser ? localStorage.getItem('selectedPart') || '' : '';
+  let threadSize = browser ? localStorage.getItem('threadSize') || '' : '';
+  let length = browser ? localStorage.getItem('length') || '' : '';
+  let standard = browser ? localStorage.getItem('standard') || '' : '';
+  let material = browser ? localStorage.getItem('material') || '' : '';
   
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
   const materials = ['Stainless Steel A2', 'Stainless Steel A4', 'Zinc-Plated Steel', 'Black Oxide Steel'];
 
-  let showPreview = false;
+  // Save individual values when they change
+  $: if (browser && selectedPart) localStorage.setItem('selectedPart', selectedPart);
+  $: if (browser && threadSize) localStorage.setItem('threadSize', threadSize);
+  $: if (browser && length) localStorage.setItem('length', length);
+  $: if (browser && standard) localStorage.setItem('standard', standard);
+  $: if (browser && material) localStorage.setItem('material', material);
 
-  // Add this reactive statement
+  // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
                    Boolean(threadSize) && 
                    Boolean(length) && 
                    Boolean(standard) && 
                    Boolean(material);
-
-  // Load saved data on component mount
-  onMount(() => {
-    if (browser) {
-      const savedData = localStorage.getItem('partLabelData');
-      if (savedData) {
-        const data = JSON.parse(savedData);
-        selectedPart = data.selectedPart;
-        threadSize = data.threadSize;
-        length = data.length;
-        standard = data.standard;
-        material = data.material;
-      }
-    }
-  });
-
-  // Save data whenever any value changes
-  $: {
-    if (browser) {
-      const data = { selectedPart, threadSize, length, standard, material };
-      localStorage.setItem('partLabelData', JSON.stringify(data));
-    }
-  }
 
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
@@ -73,7 +56,7 @@
     
     // Create clone and set original dimensions for download
     const svgClone = svgElement.cloneNode(true) as SVGElement;
-    svgClone.setAttribute('width', '35mm');
+    svgClone.setAttribute('width', '36mm');
     svgClone.setAttribute('height', '12mm');
     
     // Fetch and convert screw image to base64
@@ -202,8 +185,8 @@
         <image 
           x="15" 
           y="10"
-          width="90"
-          height="100"
+          height="70"
+          preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
         />
 
@@ -258,7 +241,7 @@
   }
 
   svg {
-    width: 35mm;
+    width: 36mm;
     height: 12mm;
   }
 </style>
