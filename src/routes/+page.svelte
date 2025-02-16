@@ -12,7 +12,7 @@
   const SVG_HEIGHT = 120;
 
   // SVG dimensions constants
-  const SCREW_IMAGE_HEIGHT = 120;
+  const SCREW_IMAGE_HEIGHT = 100;
   const SCREW_IMAGE_WIDTH = 140;
   const STANDARD_BOX_WIDTH = 30;  // Width of the black box
   
@@ -20,6 +20,9 @@
   const LABEL_FONT_SIZE = 38;     // Size for the main label (e.g., "M6x25")
   const MATERIAL_FONT_SIZE = 24;   // Size for the material text
   const STANDARD_FONT_SIZE = 15;   // Size for the standard text in black box
+
+  // Add scale factor for screw image
+  const SCREW_SCALE = 1.3;  // Adjust this value to scale the screw image up or down
 
   // Initialize with stored values or empty strings
   let selectedPart = browser ? localStorage.getItem('selectedPart') || '' : '';
@@ -63,7 +66,7 @@
   $: standardXPosition = effectiveWidth - STANDARD_BOX_WIDTH + horizontalMargin * 10;
   $: textXPosition = standardXPosition - textGap;
 
-  $: screwYPosition = SVG_HEIGHT / 2 - 50;
+  $: screwYPosition = SVG_HEIGHT / 2 - (SCREW_IMAGE_HEIGHT/2 * SCREW_SCALE);
 
   // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
@@ -382,8 +385,7 @@
         <!-- Screw image -->
         {#if screwSvgContent}
           <g 
-            transform="translate({screwXPosition} {screwYPosition})"
-            
+            transform="translate({screwXPosition} {screwYPosition}) scale({SCREW_SCALE})"
           >
             {@html screwSvgContent}
           </g>
