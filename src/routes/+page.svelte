@@ -361,8 +361,9 @@
         <image 
           x={screwXPosition}
           y={screwYPosition}
+          
           height={SCREW_IMAGE_HEIGHT}
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio="xMinYMid"
           href={getScrewImagePath(standard)}
         />
 
