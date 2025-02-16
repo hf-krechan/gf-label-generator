@@ -70,6 +70,11 @@
     const svgElement = document.querySelector('.svg-preview svg');
     if (!svgElement) return;
     
+    // Create clone and set original dimensions for download
+    const svgClone = svgElement.cloneNode(true) as SVGElement;
+    svgClone.setAttribute('width', '35mm');
+    svgClone.setAttribute('height', '12mm');
+    
     // Fetch and convert screw image to base64
     const screwResponse = await fetch(getScrewImagePath(standard));
     const screwBlob = await screwResponse.blob();
@@ -80,7 +85,6 @@
     });
 
     // Create a clone of the SVG and update the image href
-    const svgClone = svgElement.cloneNode(true) as SVGElement;
     const imageElement = svgClone.querySelector('image');
     if (imageElement) {
       imageElement.setAttribute('href', screwBase64 as string);
@@ -183,13 +187,14 @@
   {#if showPreview}
     <div class="svg-preview">
       <svg 
-        width="35mm" 
-        height="8.75mm" 
-        viewBox="0 0 350 87.5" 
+        width="140mm" 
+        height="48mm" 
+        viewBox="0 0 350 120" 
         preserveAspectRatio="xMidYMid meet"
+        class="preview-svg"
       >
         <!-- Background -->
-        <rect width="350" height="87.5" fill="#E0E0E0"/>
+        <rect width="350" height="120" fill="#E0E0E0"/>
         
         <!-- Screw image -->
         <image 
@@ -202,15 +207,16 @@
 
         <!-- Standard (DIN) in black box -->
         <g transform="translate(300,0)">
-          <rect width="30" height="87.5" fill="black"/>
+          <rect width="30" height="120" fill="black"/>
           <text 
             x="15" 
-            y="44" 
+            y="60" 
             font-size="13" 
             font-weight="bold" 
             fill="white" 
             text-anchor="middle"
-            transform="rotate(-90, 15, 44)"
+            dominant-baseline="middle"
+            transform="rotate(-90, 15, 60)"
             font-family="Verdana"
           >{standard}</text>
         </g>
@@ -297,9 +303,14 @@
     background: white;
   }
 
+  .preview-svg {
+    width: 140mm;
+    height: 48mm;
+  }
+
   svg {
     width: 35mm;
-    height: 8.75mm;
+    height: 12mm;
   }
 
   .download-button {
