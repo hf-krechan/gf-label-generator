@@ -9,6 +9,10 @@
   let standard = browser ? localStorage.getItem('standard') || '' : '';
   let material = browser ? localStorage.getItem('material') || '' : '';
   
+  // Add new margin controls with default values
+  let horizontalMargin = browser ? localStorage.getItem('horizontalMargin') || '2' : '2';
+  let verticalMargin = browser ? localStorage.getItem('verticalMargin') || '2' : '2';
+  
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
@@ -20,6 +24,19 @@
   $: if (browser && length) localStorage.setItem('length', length);
   $: if (browser && standard) localStorage.setItem('standard', standard);
   $: if (browser && material) localStorage.setItem('material', material);
+  
+  // Save margin values
+  $: if (browser && horizontalMargin) localStorage.setItem('horizontalMargin', horizontalMargin);
+  $: if (browser && verticalMargin) localStorage.setItem('verticalMargin', verticalMargin);
+  
+  // Calculate effective dimensions based on margins
+  $: effectiveWidth = 360 - (Number(horizontalMargin) * 2);
+  $: effectiveHeight = 120 - (Number(verticalMargin) * 2);
+  
+  // Adjust x positions based on margin
+  $: screwXPosition = Number(horizontalMargin) + 15;
+  $: textXPosition = 360 - Number(horizontalMargin) - 60; // Adjust text position
+  $: standardXPosition = 360 - Number(horizontalMargin) - 30; // Adjust standard black box position
 
   // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
@@ -91,6 +108,9 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  // Add toggle for margin visualization
+  let showMargins = false;
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -148,6 +168,46 @@
         class="w-full rounded border border-gray-300 p-2 text-base"
       />
     </div>
+
+    <!-- Add after the length input, but before the preview section -->
+    <div class="flex gap-4 mb-4">
+      <div class="flex-1">
+        <label for="horizontal-margin" class="mb-2 block font-medium text-gray-700">Horizontal Margin (mm):</label>
+        <input 
+          id="horizontal-margin"
+          type="number"
+          min="0"
+          max="30"
+          bind:value={horizontalMargin}
+          placeholder="Left/Right margin"
+          class="w-full rounded border border-gray-300 p-2 text-base"
+        />
+      </div>
+      <div class="flex-1">
+        <label for="vertical-margin" class="mb-2 block font-medium text-gray-700">Vertical Margin (mm):</label>
+        <input 
+          id="vertical-margin"
+          type="number"
+          min="0"
+          max="30"
+          bind:value={verticalMargin}
+          placeholder="Top/Bottom margin"
+          class="w-full rounded border border-gray-300 p-2 text-base"
+        />
+      </div>
+    </div>
+
+    <!-- Add after the margin inputs -->
+    <div class="mb-4">
+      <label class="flex items-center gap-2">
+        <input 
+          type="checkbox" 
+          bind:checked={showMargins}
+          class="h-4 w-4 rounded border-gray-300"
+        />
+        <span class="font-medium text-gray-700">Show margins</span>
+      </label>
+    </div>
   {/if}
 
   {#if selectedPart}
@@ -185,43 +245,79 @@
         <!-- Background -->
         <rect width="360" height="120" fill="#E0E0E0"/>
         
+        <!-- Margin visualization -->
+        {#if showMargins}
+          <!-- Left margin -->
+          <rect 
+            x="0" 
+            y="0" 
+            width={horizontalMargin} 
+            height="120" 
+            fill="rgba(255,0,0,0.2)"
+          />
+          <!-- Right margin -->
+          <rect 
+            x={360 - Number(horizontalMargin)} 
+            y="0" 
+            width={horizontalMargin} 
+            height="120" 
+            fill="rgba(255,0,0,0.2)"
+          />
+          <!-- Top margin -->
+          <rect 
+            x="0" 
+            y="0" 
+            width="360" 
+            height={verticalMargin} 
+            fill="rgba(255,0,0,0.2)"
+          />
+          <!-- Bottom margin -->
+          <rect 
+            x="0" 
+            y={120 - Number(verticalMargin)} 
+            width="360" 
+            height={verticalMargin} 
+            fill="rgba(255,0,0,0.2)"
+          />
+        {/if}
+        
         <!-- Screw image -->
         <image 
-          x="15" 
-          y={screwYPosition}
+          x={screwXPosition}
+          y={Number(verticalMargin) + screwYPosition}
           height={SCREW_IMAGE_HEIGHT}
           preserveAspectRatio="xMidYMid meet"
           href={getScrewImagePath(standard)}
         />
 
         <!-- Standard (DIN) in black box -->
-        <g transform="translate(300,0)">
-          <rect width="30" height="120" fill="black"/>
+        <g transform={`translate(${standardXPosition},${Number(verticalMargin)})`}>
+          <rect width="30" height={effectiveHeight} fill="black"/>
           <text 
             x="15" 
-            y="60" 
+            y={effectiveHeight / 2} 
             font-size="13" 
             font-weight="bold" 
             fill="white" 
             text-anchor="middle"
             dominant-baseline="middle"
-            transform="rotate(-90, 15, 60)"
+            transform={`rotate(-90, 15, ${effectiveHeight / 2})`}
             font-family="Verdana"
           >{standard}</text>
         </g>
 
         <!-- Text elements -->
         <text 
-          x="280" 
-          y="40" 
+          x={textXPosition}
+          y={Number(verticalMargin) + 40} 
           font-size="35" 
           font-weight="bold" 
           font-family="Verdana"
           text-anchor="end"
         >{getLabelText()}</text>
         <text 
-          x="280" 
-          y="90" 
+          x={textXPosition}
+          y={Number(verticalMargin) + 90} 
           font-size="12" 
           font-family="Verdana"
           text-anchor="end"
