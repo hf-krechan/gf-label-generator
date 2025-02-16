@@ -2,17 +2,23 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
+  // Physical dimensions constants
+  const PHYSICAL_WIDTH = "38mm";  // 36mm + 2mm for the margin
+  const PHYSICAL_HEIGHT = "12mm";
+  const PREVIEW_WIDTH = "140mm";
+  const PREVIEW_HEIGHT = "48mm";
+
   // SVG dimensions constants
   const SVG_WIDTH = 360;
   const SVG_HEIGHT = 120;
   const VIEW_BOX_HEIGHT = SVG_HEIGHT;
-  const SCREW_IMAGE_HEIGHT = 70;
-  const SCREW_IMAGE_WIDTH = 133;
+  const SCREW_IMAGE_HEIGHT = 80;
+  const SCREW_IMAGE_WIDTH = 120;
   const STANDARD_BOX_WIDTH = 30;  // Width of the black box
   
   // Add font size constants
   const LABEL_FONT_SIZE = 38;     // Size for the main label (e.g., "M6x25")
-  const MATERIAL_FONT_SIZE = 14;   // Size for the material text
+  const MATERIAL_FONT_SIZE = 24;   // Size for the material text
   const STANDARD_FONT_SIZE = 15;   // Size for the standard text in black box
 
   // Initialize with stored values or empty strings
@@ -93,8 +99,8 @@
     
     // Create clone and set original dimensions for download
     const svgClone = svgElement.cloneNode(true) as SVGElement;
-    svgClone.setAttribute('width', '36mm');
-    svgClone.setAttribute('height', '12mm');
+    svgClone.setAttribute('width', PHYSICAL_WIDTH);
+    svgClone.setAttribute('height', PHYSICAL_HEIGHT);
     
     // Remove the background rectangle from the clone
     const backgroundRect = svgClone.querySelector('rect[width="' + SVG_WIDTH + '"]');
@@ -359,8 +365,8 @@
     <div class="mt-8 rounded border border-gray-300 bg-white p-4">
       <h2 class="mb-4 text-xl font-semibold text-gray-700">Label Preview</h2>
       <svg 
-        width="140mm" 
-        height="48mm" 
+        width={PREVIEW_WIDTH}
+        height={PREVIEW_HEIGHT}
         viewBox="0 0 {SVG_WIDTH} {SVG_HEIGHT}" 
         preserveAspectRatio="xMidYMid meet"
         class="preview-svg"
