@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
   // Physical dimensions constants - these will be our single source of truth
-  const PHYSICAL_WIDTH = 36;  // in mm
+  const PHYSICAL_WIDTH = 38;  // in mm
   const PHYSICAL_HEIGHT = 12; // in mm
   const MARGIN = 2;          // in mm
 
   // SVG viewport dimensions (used for internal coordinates)
-  const SVG_WIDTH = 360;
-  const SVG_HEIGHT = 120;
+  const SVG_WIDTH = PHYSICAL_WIDTH * 10;
+  const SVG_HEIGHT = PHYSICAL_HEIGHT * 10;
 
   // SVG dimensions constants
   const SOURCE_SVG_WIDTH = 100;  // Width of the source SVG (din912.svg)
