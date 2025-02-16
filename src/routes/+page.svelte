@@ -12,8 +12,9 @@
   const SVG_HEIGHT = 120;
 
   // SVG dimensions constants
+  const SOURCE_SVG_WIDTH = 100;  // Width of the source SVG (din912.svg)
+  const DESIRED_SCREW_WIDTH = 130;  // Desired width in SVG units
   const SCREW_IMAGE_HEIGHT = 100;
-  const SCREW_IMAGE_WIDTH = 140;
   const STANDARD_BOX_WIDTH = 30;  // Width of the black box
   
   // Add font size constants
@@ -21,8 +22,11 @@
   const MATERIAL_FONT_SIZE = 24;   // Size for the material text
   const STANDARD_FONT_SIZE = 15;   // Size for the standard text in black box
 
-  // Add scale factor for screw image
-  const SCREW_SCALE = 1.3;  // Adjust this value to scale the screw image up or down
+  // Calculate scale based on desired width
+  const SCREW_SCALE = DESIRED_SCREW_WIDTH / SOURCE_SVG_WIDTH;  // This will give us 1.4
+
+  // Calculate effective height after scaling (used for vertical positioning)
+  const EFFECTIVE_SCREW_HEIGHT = SCREW_IMAGE_HEIGHT * SCREW_SCALE;
 
   // Initialize with stored values or empty strings
   let selectedPart = browser ? localStorage.getItem('selectedPart') || '' : '';
@@ -66,7 +70,8 @@
   $: standardXPosition = effectiveWidth - STANDARD_BOX_WIDTH + horizontalMargin * 10;
   $: textXPosition = standardXPosition - textGap;
 
-  $: screwYPosition = SVG_HEIGHT / 2 - (SCREW_IMAGE_HEIGHT/2 * SCREW_SCALE);
+  // Update Y position calculation to use effective height
+  $: screwYPosition = SVG_HEIGHT / 2 - (EFFECTIVE_SCREW_HEIGHT / 2);
 
   // Reactive statement for preview
   $: showPreview = selectedPart === 'Screw' && 
