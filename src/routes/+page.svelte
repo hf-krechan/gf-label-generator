@@ -177,10 +177,19 @@
       <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
       <input 
         id="length"
-        type="text"
-        inputmode="numeric"
+        type="number"
+        min="1"
+        step="1"
         bind:value={length}
-        on:input={(e) => handleInput(e, (val) => length = val)}
+        on:beforeinput={(e) => {
+          if (!/^\d*$/.test(e.data || '')) {
+            e.preventDefault();
+            lengthHelper = 'Only numbers allowed';
+          } else {
+            lengthHelper = '';
+          }
+        }}
+        placeholder="Enter length in mm"
         class="w-full rounded border border-gray-300 p-2 text-base {lengthError ? 'border-red-500' : ''}"
         aria-invalid={Boolean(lengthError)}
       />
@@ -218,10 +227,20 @@
         <label for="horizontal-margin" class="mb-2 block font-medium text-gray-700">Horizontal Margin (mm):</label>
         <input 
           id="horizontal-margin"
-          type="text"
-          inputmode="numeric"
+          type="number"
+          min="0"
+          max="30"
+          step="1"
           bind:value={horizontalMargin}
-          on:input={(e) => handleInput(e, (val) => horizontalMargin = val)}
+          on:beforeinput={(e) => {
+            if (!/^\d*$/.test(e.data || '')) {
+              e.preventDefault();
+              horizontalMarginHelper = 'Only numbers allowed';
+            } else {
+              horizontalMarginHelper = '';
+            }
+          }}
+          placeholder="Left/Right margin"
           class="w-full rounded border border-gray-300 p-2 text-base {horizontalMarginError ? 'border-red-500' : ''}"
           aria-invalid={Boolean(horizontalMarginError)}
         />
@@ -236,10 +255,19 @@
         <label for="vertical-margin" class="mb-2 block font-medium text-gray-700">Vertical Margin (mm):</label>
         <input 
           id="vertical-margin"
-          type="text"
-          inputmode="numeric"
+          type="number"
+          min="0"
+          max="30"
+          step="1"
           bind:value={verticalMargin}
-          on:input={(e) => handleInput(e, (val) => verticalMargin = val)}
+          on:input={(e) => {
+            const value = e.currentTarget.value;
+            if (!/^\d*$/.test(value)) {
+              verticalMarginHelper = 'Only numbers allowed';
+            } else {
+              verticalMarginHelper = '';
+            }
+          }}
           placeholder="Top/Bottom margin"
           class="w-full rounded border border-gray-300 p-2 text-base {verticalMarginError ? 'border-red-500' : ''}"
           aria-invalid={Boolean(verticalMarginError)}
