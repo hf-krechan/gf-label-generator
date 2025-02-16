@@ -17,10 +17,10 @@
 
   // Add this reactive statement
   $: showPreview = selectedPart === 'Screw' && 
-                   threadSize && 
-                   length && 
-                   standard && 
-                   material;
+                   Boolean(threadSize) && 
+                   Boolean(length) && 
+                   Boolean(standard) && 
+                   Boolean(material);
 
   // Load saved data on component mount
   onMount(() => {
