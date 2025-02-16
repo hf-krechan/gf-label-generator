@@ -7,7 +7,13 @@
   const SVG_HEIGHT = 120;
   const VIEW_BOX_HEIGHT = SVG_HEIGHT;
   const SCREW_IMAGE_HEIGHT = 70;
+  const SCREW_IMAGE_WIDTH = 133;
   const STANDARD_BOX_WIDTH = 30;  // Width of the black box
+  
+  // Add font size constants
+  const LABEL_FONT_SIZE = 38;     // Size for the main label (e.g., "M6x25")
+  const MATERIAL_FONT_SIZE = 14;   // Size for the material text
+  const STANDARD_FONT_SIZE = 15;   // Size for the standard text in black box
 
   // Initialize with stored values or empty strings
   let selectedPart = browser ? localStorage.getItem('selectedPart') || '' : '';
@@ -366,7 +372,7 @@
         <image 
           x={screwXPosition}
           y={screwYPosition}
-          
+          width={SCREW_IMAGE_WIDTH}
           height={SCREW_IMAGE_HEIGHT}
           preserveAspectRatio="xMinYMid"
           href={getScrewImagePath(standard)}
@@ -382,7 +388,7 @@
           <text 
             x={STANDARD_BOX_WIDTH/2}
             y={effectiveHeight/2} 
-            font-size="13" 
+            font-size={STANDARD_FONT_SIZE}
             font-weight="bold" 
             fill="white" 
             text-anchor="middle"
@@ -396,7 +402,7 @@
         <text 
           x={textXPosition}
           y={verticalMargin * 10 + 40} 
-          font-size="35" 
+          font-size={LABEL_FONT_SIZE}
           font-weight="bold" 
           font-family="Verdana"
           text-anchor="end"
@@ -404,7 +410,7 @@
         <text 
           x={textXPosition}
           y={verticalMargin * 10 + 90} 
-          font-size="12" 
+          font-size={MATERIAL_FONT_SIZE}
           font-family="Verdana"
           text-anchor="end"
         >{getMaterialText()}</text>
