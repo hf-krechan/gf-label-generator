@@ -88,7 +88,6 @@
 
   // Function to get material text in German format
   function getMaterialText() {
-    if (material === 'Zinc-Plated Steel') return 'Stahl vz';
     // Add other material translations as needed
     return material;
   }
