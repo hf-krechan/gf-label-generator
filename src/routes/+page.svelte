@@ -84,11 +84,10 @@
   $: screwYPosition = SVG_HEIGHT / 2 - (EFFECTIVE_SCREW_HEIGHT / 2);
 
   // Reactive statement for preview
-  $: showPreview = selectedPart === 'Screw' && 
-                   Boolean(threadSize) && 
-                   Boolean(length) && 
-                   Boolean(standard) && 
-                   Boolean(material);
+  $: showPreview = (
+    (selectedPart === 'Screw' && Boolean(threadSize) && Boolean(length) && Boolean(standard) && Boolean(material)) ||
+    (selectedPart === 'Nut' && Boolean(threadSize) && Boolean(standard) && Boolean(material))
+  );
 
   // Replace the materials array with a material map
   const materialMap = new Map([
@@ -98,19 +97,39 @@
     ['BO', 'Black Oxide Steel']
   ]);
 
-  // Replace the standards array with a standards map
-  const standardsMap = new Map([
-    ['DIN 912', 'Socket Head Cap Screw'],
-    ['DIN 933', 'Hex Head Screw'],
-    ['ISO 4762', 'Socket Head Cap Screw'],
-    ['ISO 4014', 'Hex Head Screw']
-  ]);
+  // Replace the standards map with separate maps for screws and nuts
+  const standardsMap = {
+    screws: new Map([
+      ['DIN 912', 'Socket Head Cap Screw'],
+      ['DIN 933', 'Hex Head Screw'],
+      ['ISO 4762', 'Socket Head Cap Screw'],
+      ['ISO 4014', 'Hex Head Screw']
+    ]),
+    nuts: new Map([
+      ['DIN 934', 'Hex Nut'],
+      ['DIN 985', 'Nylon Insert Lock Nut'],
+      ['DIN 439', 'Thin Hex Nut'],
+      ['DIN 936', 'Low Hex Nut'],
+      ['DIN 1587', 'Domed Cap Nut (High Form)'],
+      ['DIN 986', 'Nylon Insert Lock Nut'],
+      ['DIN 917', 'Low Domed Cap Nut'],
+      ['DIN 928', 'Square Weld Nut'],
+      ['DIN 929', 'Hex Weld Nut']
+    ])
+  };
 
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
-    if (selectedPart === 'Screw' && threadSize && length) {
+    if (!threadSize) return '';
+    
+    if (selectedPart === 'Screw' && length) {
       return `${threadSize}x${length}`;
     }
+    
+    if (selectedPart === 'Nut') {
+      return threadSize;
+    }
+    
     return '';
   }
 
@@ -125,21 +144,20 @@
     return `${material} - ${strengthClass}`;
   }
 
-  // Function to get the correct SVG path based on the standard
-  function getScrewImagePath(standard: string): string {
+  // Update function name and logic to handle both part types
+  function getPartImagePath(standard: string, partType: string): string {
     const standardLower = standard.toLowerCase().replace(' ', '');
-    return `/images/screws/${standardLower}.svg`;
+    return `/images/${partType.toLowerCase()}s/${standardLower}.svg`;
   }
 
   // Add a variable to store the SVG content
   let screwSvgContent = '';
 
-  // Modify the function to fetch SVG content
-  async function fetchScrewSvg(standard: string) {
+  // Update the fetch function
+  async function fetchPartSvg(standard: string) {
     try {
-      const response = await fetch(getScrewImagePath(standard));
+      const response = await fetch(getPartImagePath(standard, selectedPart));
       const svgText = await response.text();
-      // Extract the content inside the svg tags
       const match = svgText.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
       screwSvgContent = match ? match[1] : '';
     } catch (error) {
@@ -149,7 +167,7 @@
 
   // Watch standard changes to update SVG content
   $: if (standard) {
-    fetchScrewSvg(standard);
+    fetchPartSvg(standard);
   }
 
   // Update the download function to be simpler
@@ -258,7 +276,7 @@
     </select>
   </div>
 
-  {#if selectedPart === 'Screw'}
+  {#if selectedPart === 'Screw' || selectedPart === 'Nut'}
     <div class="mb-4">
       <label for="thread-size" class="mb-2 block font-medium text-gray-700">Select Thread Size:</label>
       <select id="thread-size" bind:value={threadSize} class="w-full rounded border border-gray-300 p-2 text-base">
@@ -269,39 +287,41 @@
       </select>
     </div>
 
-    <div class="mb-4">
-      <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
-      <input 
-        id="length"
-        type="number"
-        min="1"
-        step="1"
-        bind:value={length}
-        on:beforeinput={(e) => {
-          if (!/^\d*$/.test(e.data || '')) {
-            e.preventDefault();
-            lengthHelper = 'Only numbers allowed';
-          } else {
-            lengthHelper = '';
-          }
-        }}
-        placeholder="Enter length in mm"
-        class="w-full rounded border border-gray-300 p-2 text-base {lengthError ? 'border-red-500' : ''}"
-        aria-invalid={Boolean(lengthError)}
-      />
-      {#if lengthHelper}
-        <p class="mt-1 text-sm text-gray-500">{lengthHelper}</p>
-      {/if}
-      {#if lengthError}
-        <p class="mt-1 text-sm text-red-600">{lengthError}</p>
-      {/if}
-    </div>
+    {#if selectedPart === 'Screw'}
+      <div class="mb-4">
+        <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
+        <input 
+          id="length"
+          type="number"
+          min="1"
+          step="1"
+          bind:value={length}
+          on:beforeinput={(e) => {
+            if (!/^\d*$/.test(e.data || '')) {
+              e.preventDefault();
+              lengthHelper = 'Only numbers allowed';
+            } else {
+              lengthHelper = '';
+            }
+          }}
+          placeholder="Enter length in mm"
+          class="w-full rounded border border-gray-300 p-2 text-base {lengthError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(lengthError)}
+        />
+        {#if lengthHelper}
+          <p class="mt-1 text-sm text-gray-500">{lengthHelper}</p>
+        {/if}
+        {#if lengthError}
+          <p class="mt-1 text-sm text-red-600">{lengthError}</p>
+        {/if}
+      </div>
+    {/if}
 
     <div class="mb-4">
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#each Array.from(standardsMap.entries()) as [norm, name]}
+        {#each Array.from(standardsMap[selectedPart.toLowerCase() + 's'].entries()) as [norm, name]}
           <option value={norm}>{norm} - {name}</option>
         {/each}
       </select>
@@ -317,123 +337,23 @@
       </select>
     </div>
 
-    <!-- Add after the material select element -->
-    <div class="mb-4">
-      <label for="strength" class="mb-2 block font-medium text-gray-700">Select Strength Class:</label>
-      <select 
-        id="strength" 
-        bind:value={strengthClass} 
-        class="w-full rounded border border-gray-300 p-2 text-base"
-        disabled={!material}
-      >
-        <option value="">Choose strength class...</option>
-        {#each getStrengthClassesForMaterial(material) as sc}
-          <option value={sc}>{sc}</option>
-        {/each}
-      </select>
-    </div>
-
-    <!-- Add after the length input, but before the preview section -->
-    <div class="flex gap-4 mb-4">
-      <div class="flex-1">
-        <label for="horizontal-margin" class="mb-2 block font-medium text-gray-700">Horizontal Margin (mm):</label>
-        <input 
-          id="horizontal-margin"
-          type="number"
-          min="0"
-          max="30"
-          step="1"
-          bind:value={horizontalMargin}
-          on:beforeinput={(e) => {
-            if (!/^\d*$/.test(e.data || '')) {
-              e.preventDefault();
-              horizontalMarginHelper = 'Only numbers allowed';
-            } else {
-              horizontalMarginHelper = '';
-            }
-          }}
-          placeholder="Left/Right margin"
-          class="w-full rounded border border-gray-300 p-2 text-base {horizontalMarginError ? 'border-red-500' : ''}"
-          aria-invalid={Boolean(horizontalMarginError)}
-        />
-        {#if horizontalMarginHelper}
-          <p class="mt-1 text-sm text-gray-500">{horizontalMarginHelper}</p>
-        {/if}
-        {#if horizontalMarginError}
-          <p class="mt-1 text-sm text-red-600">{horizontalMarginError}</p>
-        {/if}
+    {#if selectedPart === 'Screw'}
+      <div class="mb-4">
+        <label for="strength" class="mb-2 block font-medium text-gray-700">Select Strength Class:</label>
+        <select 
+          id="strength" 
+          bind:value={strengthClass} 
+          class="w-full rounded border border-gray-300 p-2 text-base"
+          disabled={!material}
+        >
+          <option value="">Choose strength class...</option>
+          {#each getStrengthClassesForMaterial(material) as sc}
+            <option value={sc}>{sc}</option>
+          {/each}
+        </select>
       </div>
-      <div class="flex-1">
-        <label for="vertical-margin" class="mb-2 block font-medium text-gray-700">Vertical Margin (mm):</label>
-        <input 
-          id="vertical-margin"
-          type="number"
-          min="0"
-          max="30"
-          step="1"
-          bind:value={verticalMargin}
-          on:input={(e) => {
-            const value = e.currentTarget.value;
-            if (!/^\d*$/.test(value)) {
-              verticalMarginHelper = 'Only numbers allowed';
-            } else {
-              verticalMarginHelper = '';
-            }
-          }}
-          placeholder="Top/Bottom margin"
-          class="w-full rounded border border-gray-300 p-2 text-base {verticalMarginError ? 'border-red-500' : ''}"
-          aria-invalid={Boolean(verticalMarginError)}
-        />
-        {#if verticalMarginHelper}
-          <p class="mt-1 text-sm text-gray-500">{verticalMarginHelper}</p>
-        {/if}
-        {#if verticalMarginError}
-          <p class="mt-1 text-sm text-red-600">{verticalMarginError}</p>
-        {/if}
-      </div>
-      <div class="flex-1">
-        <label for="text-gap" class="mb-2 block font-medium text-gray-700">Text Gap (mm):</label>
-        <input 
-          id="text-gap"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          bind:value={textGap}
-          on:beforeinput={(e) => {
-            if (!/^\d*$/.test(e.data || '')) {
-              e.preventDefault();
-              textGapHelper = 'Only numbers allowed';
-            } else {
-              textGapHelper = '';
-            }
-          }}
-          placeholder="Text distance"
-          class="w-full rounded border border-gray-300 p-2 text-base {textGapError ? 'border-red-500' : ''}"
-          aria-invalid={Boolean(textGapError)}
-        />
-        {#if textGapHelper}
-          <p class="mt-1 text-sm text-gray-500">{textGapHelper}</p>
-        {/if}
-        {#if textGapError}
-          <p class="mt-1 text-sm text-red-600">{textGapError}</p>
-        {/if}
-      </div>
-    </div>
-
-    <!-- Add after the margin inputs -->
-    <div class="mb-4">
-      <label class="flex items-center gap-2">
-        <input 
-          type="checkbox" 
-          bind:checked={showMargins}
-          class="h-4 w-4 rounded border-gray-300"
-        />
-        <span class="font-medium text-gray-700">Show margins</span>
-      </label>
-    </div>
+    {/if}
   {/if}
-
 
   {#if showPreview}
     <div class="mt-8 rounded border border-gray-300 bg-white p-4">
