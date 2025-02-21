@@ -43,7 +43,19 @@
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
-  const materials = ['Stainless Steel A2', 'Stainless Steel A4', 'Zinc-Plated Steel', 'Black Oxide Steel'];
+
+  // Replace the single strengthClasses array with material-specific arrays
+  const strengthClasses = {
+    steel: ['8.8', '10.9', '12.9'],
+    A2: ['70', '80'],
+    A4: ['70', '80']
+  };
+
+  // Add new state variable with localStorage
+  let strengthClass = browser ? localStorage.getItem('strengthClass') || '' : '';
+
+  // Add localStorage save for strength class
+  $: if (browser && strengthClass) localStorage.setItem('strengthClass', strengthClass);
 
   // Save individual values when they change
   $: if (browser && selectedPart) localStorage.setItem('selectedPart', selectedPart);
@@ -78,6 +90,22 @@
                    Boolean(standard) && 
                    Boolean(material);
 
+  // Replace the materials array with a material map
+  const materialMap = new Map([
+    ['A2', 'Stainless Steel'],
+    ['A4', 'Stainless Steel'],
+    ['Zn', 'Zinc-Plated Steel'],
+    ['BO', 'Black Oxide Steel']
+  ]);
+
+  // Replace the standards array with a standards map
+  const standardsMap = new Map([
+    ['DIN 912', 'Socket Head Cap Screw'],
+    ['DIN 933', 'Hex Head Screw'],
+    ['ISO 4762', 'Socket Head Cap Screw'],
+    ['ISO 4014', 'Hex Head Screw']
+  ]);
+
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
     if (selectedPart === 'Screw' && threadSize && length) {
@@ -88,8 +116,13 @@
 
   // Function to get material text in German format
   function getMaterialText() {
-    // Add other material translations as needed
-    return material;
+    if (!material) return '';
+    
+    if (!strengthClass) return material;
+    
+    
+    // For other materials, show short format with strength class
+    return `${material} - ${strengthClass}`;
   }
 
   // Function to get the correct SVG path based on the standard
@@ -195,6 +228,21 @@
     const value = input.value.replace(/[^\d]/g, '');
     setter(Number(value));
   }
+
+  // Add helper function to get appropriate strength classes
+  function getStrengthClassesForMaterial(material: string): string[] {
+    switch (material) {
+      case 'A2':
+        return strengthClasses.A2;
+      case 'A4':
+        return strengthClasses.A4;
+      case 'Zn':
+      case 'BO':
+        return strengthClasses.steel;
+      default:
+        return [];
+    }
+  }
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -253,8 +301,8 @@
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#each standards as std}
-          <option value={std}>{std}</option>
+        {#each Array.from(standardsMap.entries()) as [norm, name]}
+          <option value={norm}>{norm} - {name}</option>
         {/each}
       </select>
     </div>
@@ -263,8 +311,24 @@
       <label for="material" class="mb-2 block font-medium text-gray-700">Select Material:</label>
       <select id="material" bind:value={material} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose material...</option>
-        {#each materials as mat}
-          <option value={mat}>{mat}</option>
+        {#each Array.from(materialMap.entries()) as [shortName, longName]}
+          <option value={shortName}>{shortName} - {longName}</option>
+        {/each}
+      </select>
+    </div>
+
+    <!-- Add after the material select element -->
+    <div class="mb-4">
+      <label for="strength" class="mb-2 block font-medium text-gray-700">Select Strength Class:</label>
+      <select 
+        id="strength" 
+        bind:value={strengthClass} 
+        class="w-full rounded border border-gray-300 p-2 text-base"
+        disabled={!material}
+      >
+        <option value="">Choose strength class...</option>
+        {#each getStrengthClassesForMaterial(material) as sc}
+          <option value={sc}>{sc}</option>
         {/each}
       </select>
     </div>
