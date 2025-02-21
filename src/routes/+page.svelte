@@ -43,7 +43,6 @@
   const partTypes = ['Screw', 'Nut', 'Washer'];
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
-  const materials = ['Stainless Steel A2', 'Stainless Steel A4', 'Zinc-Plated Steel', 'Black Oxide Steel'];
 
   // Add after the materials constant
   const strengthClasses = ['8.8', '10.9', '12.9', 'A2-70', 'A2-80', 'A4-70', 'A4-80'];
@@ -87,6 +86,14 @@
                    Boolean(standard) && 
                    Boolean(material);
 
+  // Replace the materials array with a material map
+  const materialMap = new Map([
+    ['A2', 'Stainless Steel'],
+    ['A4', 'Stainless Steel'],
+    ['Zn', 'Zinc-Plated Steel'],
+    ['BO', 'Black Oxide Steel']
+  ]);
+
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
     if (selectedPart === 'Screw' && threadSize && length) {
@@ -98,22 +105,23 @@
   // Function to get material text in German format
   function getMaterialText() {
     if (!material) return '';
+    
     if (!strengthClass) return material;
     
-    // For stainless steel, the strength class is already part of the grade (A2-70, A4-80 etc)
+    // For stainless steel grades (A2/A4)
     if (strengthClass.startsWith('A')) {
       // Only show strength class if it matches the material type
-      if (material.includes('A2') && strengthClass.startsWith('A2')) {
-        return material.replace('A2', strengthClass);
+      if (material === 'A2' && strengthClass.startsWith('A2')) {
+        return strengthClass;
       }
-      if (material.includes('A4') && strengthClass.startsWith('A4')) {
-        return material.replace('A4', strengthClass);
+      if (material === 'A4' && strengthClass.startsWith('A4')) {
+        return strengthClass;
       }
       return material;
     }
     
-    // For other materials, append the strength class
-    return `${material} ${strengthClass}`;
+    // For other materials, show short format with strength class
+    return `${material} - ${strengthClass}`;
   }
 
   // Function to get the correct SVG path based on the standard
@@ -287,8 +295,8 @@
       <label for="material" class="mb-2 block font-medium text-gray-700">Select Material:</label>
       <select id="material" bind:value={material} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose material...</option>
-        {#each materials as mat}
-          <option value={mat}>{mat}</option>
+        {#each Array.from(materialMap.entries()) as [shortName, longName]}
+          <option value={shortName}>{shortName} - {longName}</option>
         {/each}
       </select>
     </div>
@@ -305,10 +313,10 @@
         <option value="">Choose strength class...</option>
         {#each strengthClasses.filter(sc => {
           // Only show appropriate strength classes based on material
-          if (material.includes('Stainless Steel A2')) {
+          if (material === 'A2') {
             return sc.startsWith('A2');
           }
-          if (material.includes('Stainless Steel A4')) {
+          if (material === 'A4') {
             return sc.startsWith('A4');
           }
           // For non-stainless materials, show regular strength classes
