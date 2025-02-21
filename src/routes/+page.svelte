@@ -98,6 +98,14 @@
     ['BO', 'Black Oxide Steel']
   ]);
 
+  // Replace the standards array with a standards map
+  const standardsMap = new Map([
+    ['DIN 912', 'Socket Head Cap Screw'],
+    ['DIN 933', 'Hex Head Screw'],
+    ['ISO 4762', 'Socket Head Cap Screw'],
+    ['ISO 4014', 'Hex Head Screw']
+  ]);
+
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
     if (selectedPart === 'Screw' && threadSize && length) {
@@ -293,8 +301,8 @@
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#each standards as std}
-          <option value={std}>{std}</option>
+        {#each Array.from(standardsMap.entries()) as [norm, name]}
+          <option value={norm}>{norm} - {name}</option>
         {/each}
       </select>
     </div>
