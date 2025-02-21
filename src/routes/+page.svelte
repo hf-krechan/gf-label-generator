@@ -47,8 +47,8 @@
   // Replace the single strengthClasses array with material-specific arrays
   const strengthClasses = {
     steel: ['8.8', '10.9', '12.9'],
-    A2: ['A2-70', 'A2-80'],
-    A4: ['A4-70', 'A4-80']
+    A2: ['70', '80'],
+    A4: ['70', '80']
   };
 
   // Add new state variable with localStorage
@@ -112,17 +112,6 @@
     
     if (!strengthClass) return material;
     
-    // For stainless steel grades (A2/A4)
-    if (strengthClass.startsWith('A')) {
-      // Only show strength class if it matches the material type
-      if (material === 'A2' && strengthClass.startsWith('A2')) {
-        return strengthClass;
-      }
-      if (material === 'A4' && strengthClass.startsWith('A4')) {
-        return strengthClass;
-      }
-      return material;
-    }
     
     // For other materials, show short format with strength class
     return `${material} - ${strengthClass}`;
