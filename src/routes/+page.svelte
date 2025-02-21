@@ -45,6 +45,15 @@
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
   const materials = ['Stainless Steel A2', 'Stainless Steel A4', 'Zinc-Plated Steel', 'Black Oxide Steel'];
 
+  // Add after the materials constant
+  const strengthClasses = ['8.8', '10.9', '12.9', 'A2-70', 'A2-80', 'A4-70', 'A4-80'];
+
+  // Add new state variable with localStorage
+  let strengthClass = browser ? localStorage.getItem('strengthClass') || '' : '';
+
+  // Add localStorage save for strength class
+  $: if (browser && strengthClass) localStorage.setItem('strengthClass', strengthClass);
+
   // Save individual values when they change
   $: if (browser && selectedPart) localStorage.setItem('selectedPart', selectedPart);
   $: if (browser && threadSize) localStorage.setItem('threadSize', threadSize);
@@ -88,8 +97,23 @@
 
   // Function to get material text in German format
   function getMaterialText() {
-    // Add other material translations as needed
-    return material;
+    if (!material) return '';
+    if (!strengthClass) return material;
+    
+    // For stainless steel, the strength class is already part of the grade (A2-70, A4-80 etc)
+    if (strengthClass.startsWith('A')) {
+      // Only show strength class if it matches the material type
+      if (material.includes('A2') && strengthClass.startsWith('A2')) {
+        return material.replace('A2', strengthClass);
+      }
+      if (material.includes('A4') && strengthClass.startsWith('A4')) {
+        return material.replace('A4', strengthClass);
+      }
+      return material;
+    }
+    
+    // For other materials, append the strength class
+    return `${material} ${strengthClass}`;
   }
 
   // Function to get the correct SVG path based on the standard
@@ -265,6 +289,32 @@
         <option value="">Choose material...</option>
         {#each materials as mat}
           <option value={mat}>{mat}</option>
+        {/each}
+      </select>
+    </div>
+
+    <!-- Add after the material select element -->
+    <div class="mb-4">
+      <label for="strength" class="mb-2 block font-medium text-gray-700">Select Strength Class:</label>
+      <select 
+        id="strength" 
+        bind:value={strengthClass} 
+        class="w-full rounded border border-gray-300 p-2 text-base"
+        disabled={!material}
+      >
+        <option value="">Choose strength class...</option>
+        {#each strengthClasses.filter(sc => {
+          // Only show appropriate strength classes based on material
+          if (material.includes('Stainless Steel A2')) {
+            return sc.startsWith('A2');
+          }
+          if (material.includes('Stainless Steel A4')) {
+            return sc.startsWith('A4');
+          }
+          // For non-stainless materials, show regular strength classes
+          return !sc.startsWith('A');
+        }) as sc}
+          <option value={sc}>{sc}</option>
         {/each}
       </select>
     </div>
