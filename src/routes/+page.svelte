@@ -44,8 +44,12 @@
   const threadSizes = ['M3', 'M4', 'M5', 'M6', 'M8', 'M10'];
   const standards = ['DIN 912', 'DIN 933', 'ISO 4762', 'ISO 4014'];
 
-  // Add after the materials constant
-  const strengthClasses = ['8.8', '10.9', '12.9', 'A2-70', 'A2-80', 'A4-70', 'A4-80'];
+  // Replace the single strengthClasses array with material-specific arrays
+  const strengthClasses = {
+    steel: ['8.8', '10.9', '12.9'],
+    A2: ['A2-70', 'A2-80'],
+    A4: ['A4-70', 'A4-80']
+  };
 
   // Add new state variable with localStorage
   let strengthClass = browser ? localStorage.getItem('strengthClass') || '' : '';
@@ -227,6 +231,21 @@
     const value = input.value.replace(/[^\d]/g, '');
     setter(Number(value));
   }
+
+  // Add helper function to get appropriate strength classes
+  function getStrengthClassesForMaterial(material: string): string[] {
+    switch (material) {
+      case 'A2':
+        return strengthClasses.A2;
+      case 'A4':
+        return strengthClasses.A4;
+      case 'Zn':
+      case 'BO':
+        return strengthClasses.steel;
+      default:
+        return [];
+    }
+  }
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -311,17 +330,7 @@
         disabled={!material}
       >
         <option value="">Choose strength class...</option>
-        {#each strengthClasses.filter(sc => {
-          // Only show appropriate strength classes based on material
-          if (material === 'A2') {
-            return sc.startsWith('A2');
-          }
-          if (material === 'A4') {
-            return sc.startsWith('A4');
-          }
-          // For non-stainless materials, show regular strength classes
-          return !sc.startsWith('A');
-        }) as sc}
+        {#each getStrengthClassesForMaterial(material) as sc}
           <option value={sc}>{sc}</option>
         {/each}
       </select>
