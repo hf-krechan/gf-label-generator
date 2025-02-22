@@ -443,8 +443,8 @@
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#if selectedPart}
-          {#each Array.from(standardsMap[`${selectedPart.toLowerCase()}s`].entries()) as [norm, name]}
+        {#if selectedPart && selectedPart in standardsMap}
+          {#each Array.from(standardsMap[selectedPart.toLowerCase() + 's' as keyof typeof standardsMap].entries()) as [norm, name]}
             <option value={norm}>{norm} - {name}</option>
           {/each}
         {/if}
