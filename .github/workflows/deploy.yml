@@ -69,7 +69,7 @@ jobs:
           npm run build
 
       - name: Create .nojekyll file
-        run: touch build/.nojekyll
+        run: touch static/.nojekyll
 
       - name: Deploy PR Preview
         uses: JamesIves/github-pages-deploy-action@v4
