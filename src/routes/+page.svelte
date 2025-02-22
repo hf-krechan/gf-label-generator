@@ -80,7 +80,8 @@
   // Reactive statement for preview
   $: showPreview = (
     (selectedPart === 'Screw' && Boolean(threadSize) && Boolean(length) && Boolean(standard) && Boolean(material)) ||
-    (selectedPart === 'Nut' && Boolean(threadSize) && Boolean(standard) && Boolean(material))
+    (selectedPart === 'Nut' && Boolean(threadSize) && Boolean(standard) && Boolean(material)) ||
+    (selectedPart === 'Washer' && Boolean(threadSize) && Boolean(standard) && Boolean(material))
   );
 
   // Replace the materials array with a material map
@@ -91,7 +92,7 @@
     ['BO', 'Black Oxide Steel']
   ]);
 
-  // Replace the standards map with separate maps for screws and nuts
+  // Replace the standards map with separate maps for screws, nuts, and washers
   const standardsMap = {
     screws: new Map([
       ['DIN 912', 'Socket Head Cap Screw'],
@@ -109,6 +110,19 @@
       ['DIN 917', 'Low Domed Cap Nut'],
       ['DIN 928', 'Square Weld Nut'],
       ['DIN 929', 'Hex Weld Nut']
+    ]),
+    washers: new Map([
+      ['DIN 125', 'Flat Washer'],
+      ['DIN 1052', 'Flat Washer'],
+      ['DIN 127', 'Split Lock Washer'],
+      ['DIN 9021', 'Large Flat Washer'],
+      ['DIN 433', 'Reduced Outer Diameter Washer'],
+      ['DIN 7349', 'Thick Flat Washer'],
+      ['DIN 6916', 'HV Washer (Structural Bolting)'],
+      ['DIN 6796', 'Conical Spring Washer (Belleville)'],
+      ['DIN 137A', 'Curved Spring Washer'],
+      ['DIN 137B', 'Wave Spring Washer'],
+      ['DIN 7980', 'Spring Lock Washer for Socket Screws']
     ])
   };
 
@@ -120,7 +134,7 @@
       return `${threadSize}x${length}`;
     }
     
-    if (selectedPart === 'Nut') {
+    if (selectedPart === 'Nut' || selectedPart === 'Washer') {
       return threadSize;
     }
     
@@ -384,7 +398,7 @@
     </select>
   </div>
 
-  {#if selectedPart === 'Screw' || selectedPart === 'Nut'}
+  {#if selectedPart === 'Screw' || selectedPart === 'Nut' || selectedPart === 'Washer'}
     <div class="mb-4">
       <label for="thread-size" class="mb-2 block font-medium text-gray-700">Select Thread Size:</label>
       <select id="thread-size" bind:value={threadSize} class="w-full rounded border border-gray-300 p-2 text-base">
@@ -429,7 +443,7 @@
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#if selectedPart && (selectedPart === 'Screw' || selectedPart === 'Nut')}
+        {#if selectedPart}
           {#each Array.from(standardsMap[`${selectedPart.toLowerCase()}s`].entries()) as [norm, name]}
             <option value={norm}>{norm} - {name}</option>
           {/each}
