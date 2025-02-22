@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg width="100mm" height="100mm" viewBox="0 0 100 100" version="1.1" id="svg1" inkscape:version="1.4 (e7c3feb1, 2024-10-09)" sodipodi:docname="din125.svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview id="namedview1" pagecolor="#ffffff" bordercolor="#999999" borderopacity="1" inkscape:showpageshadow="0" inkscape:pageopacity="0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:document-units="mm" showguides="true" inkscape:zoom="1.4142136" inkscape:cx="113.13708" inkscape:cy="232.63812" inkscape:window-width="1920" inkscape:window-height="1027" inkscape:window-x="1920" inkscape:window-y="25" inkscape:window-maximized="0" inkscape:current-layer="g6">
+    <sodipodi:guide position="31.542707,74.999999" orientation="0,-1" id="guide1" inkscape:locked="false" />
+    <sodipodi:guide position="31.542707,25" orientation="0,-1" id="guide2" inkscape:locked="false" />
+    <sodipodi:guide position="34,50" orientation="0,-1" id="guide3" inkscape:locked="false" />
+    <sodipodi:guide position="31.542707,64" orientation="0,-1" id="guide4" inkscape:locked="false" />
+    <sodipodi:guide position="31.542707,36" orientation="0,-1" id="guide5" inkscape:locked="false" />
+    <sodipodi:guide position="34,50" orientation="-1,0" id="guide6" inkscape:locked="false" inkscape:label="" inkscape:color="rgb(0,134,229)" />
+    <sodipodi:guide position="74.999999,74.999999" orientation="-1,0" id="guide7" inkscape:locked="false" inkscape:label="" inkscape:color="rgb(0,134,229)" />
+  </sodipodi:namedview>
+  <defs id="defs1" />
+  <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1">
+    <g id="g7" transform="translate(-101.0461)">
+      <circle style="fill:none;stroke:#000000;stroke-width:0.91458;stroke-dasharray:none" id="circle3" cx="135.0461" cy="50" r="25" />
+      <circle style="fill:none;stroke:#000000;stroke-width:1.05833;stroke-dasharray:none" id="circle4" cx="135.0461" cy="50" r="14" />
+    </g>
+    <g id="g6" transform="translate(4.3562541)">
+      <rect style="fill:none;stroke:#000000;stroke-width:1.05833;stroke-dasharray:none" id="rect3" width="4" height="50" x="70.643745" y="25" />
+      <path style="fill:none;stroke:#000000;stroke-width:1.05833;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1" d="m 70.643744,35.999999 4.000001,0" id="path5" sodipodi:nodetypes="cc" />
+      <path style="fill:none;stroke:#000000;stroke-width:1.05833;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1" d="m 70.643744,63.999998 4.000001,0" id="path6" sodipodi:nodetypes="cc" />
+    </g>
+  </g>
+</svg>
