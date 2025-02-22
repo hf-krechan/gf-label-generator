@@ -31,14 +31,18 @@ jobs:
           NODE_ENV: production
         run: npm run build
 
-      - name: Create .nojekyll file
+      - name: Add .nojekyll file
         run: touch build/.nojekyll
+
+      - name: Copy index.html to 404.html
+        run: cp build/index.html build/404.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build
           branch: gh-pages
+          clean: true
 
   preview-deploy:
     runs-on: ubuntu-latest

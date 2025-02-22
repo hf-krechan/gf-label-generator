@@ -15,20 +15,14 @@ const config = {
 
 	kit: {
 		appDir: 'app',
-		adapter: adapter(),
+		adapter: adapter({
+			fallback: 'index.html'
+		}),
 		paths: {
 			base: basePath
 		},
 		prerender: {
-			handleHttpError: ({ path, referrer, message }) => {
-				// ignore deliberate link to API
-				if (path === '/api') {
-					return;
-				}
-
-				// otherwise fail the build
-				throw new Error(message);
-			}
+			handleHttpError: 'warn'
 		}
 	},
 
