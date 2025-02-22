@@ -58,13 +58,6 @@
   // Add localStorage save for strength class
   $: if (browser && strengthClass) localStorage.setItem('strengthClass', strengthClass);
 
-  // Save individual values when they change
-  $: if (browser && selectedPart) localStorage.setItem('selectedPart', selectedPart);
-  $: if (browser && threadSize) localStorage.setItem('threadSize', threadSize);
-  $: if (browser && length) localStorage.setItem('length', length);
-  $: if (browser && standard) localStorage.setItem('standard', standard);
-  $: if (browser && material) localStorage.setItem('material', material);
-  
   // Save margin values as strings in localStorage
   $: if (browser) localStorage.setItem('horizontalMargin', horizontalMargin.toString());
   $: if (browser) localStorage.setItem('verticalMargin', verticalMargin.toString());
@@ -321,30 +314,33 @@
     strengthClass: ''
   };
 
-  // Watch for part type changes
+  // Update the watch for part type changes
   $: if (selectedPart) {
-    // Save current data before switching
-    if (currentData.threadSize || currentData.material || currentData.standard) {
-      storageManager.save(selectedPart, currentData);
-    }
-    
-    // Load data for new part type
+    // Load data for new part type first
     const loadedData = storageManager.load(selectedPart);
     if (loadedData) {
-      currentData = loadedData;
       // Update individual bindings
-      threadSize = loadedData.threadSize;
-      standard = loadedData.standard;
-      material = loadedData.material;
+      threadSize = loadedData.threadSize || '';
+      standard = loadedData.standard || '';
+      material = loadedData.material || '';
       
       if ('length' in loadedData) {
-        length = loadedData.length;
+        length = loadedData.length || '';
       }
       if ('strengthClass' in loadedData) {
-        strengthClass = loadedData.strengthClass;
+        strengthClass = loadedData.strengthClass || '';
       }
+      
+      // Update currentData after loading
+      currentData = loadedData;
     } else {
       // Reset to empty state for new part type
+      threadSize = '';
+      standard = '';
+      material = '';
+      length = '';
+      strengthClass = '';
+      
       currentData = {
         threadSize: '',
         standard: '',
@@ -352,17 +348,11 @@
         length: '',
         strengthClass: ''
       };
-      // Reset individual bindings
-      threadSize = '';
-      standard = '';
-      material = '';
-      length = '';
-      strengthClass = '';
     }
   }
 
-  // Update the save logic for individual fields
-  $: if (browser && selectedPart) {
+  // Separate reactive statement for saving changes
+  $: if (browser && selectedPart && threadSize) {
     currentData = {
       ...currentData,
       threadSize,
