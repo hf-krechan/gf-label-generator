@@ -1,6 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { onDestroy } from 'svelte';
+  import { base } from '$app/paths';
 
   // Physical dimensions including margins
   const PHYSICAL_WIDTH = 38;  // Already includes margins
@@ -155,7 +156,7 @@
   // Update function name and logic to handle both part types
   function getPartImagePath(standard: string, partType: string): string {
     const standardLower = standard.toLowerCase().replace(' ', '');
-    return `/images/${partType.toLowerCase()}s/${standardLower}.svg`;
+    return `${base}/images/${partType.toLowerCase()}s/${standardLower}.svg`;
   }
 
   // Add a variable to store the SVG content
