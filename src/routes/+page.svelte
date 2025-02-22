@@ -93,6 +93,14 @@
     ['BO', 'Black Oxide Steel']
   ]);
 
+  // Add this before the standardsMap definition to help with type checking
+  type PartTypes = 'screws' | 'nuts' | 'washers';
+
+  // Add some console logging to debug the map access
+  $: console.log('Selected Part:', selectedPart);
+  $: console.log('Map Key:', selectedPart?.toLowerCase() + 's');
+  $: console.log('Available Keys:', Object.keys(standardsMap));
+
   // Replace the standards map with separate maps for screws, nuts, and washers
   const standardsMap = {
     screws: new Map([
@@ -444,10 +452,13 @@
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#if selectedPart && selectedPart in standardsMap}
-          {#each Array.from(standardsMap[selectedPart.toLowerCase() + 's' as keyof typeof standardsMap].entries()) as [norm, name]}
-            <option value={norm}>{norm} - {name}</option>
-          {/each}
+        {#if selectedPart}
+          {@const mapKey = `${selectedPart.toLowerCase()}s` as PartTypes}
+          {#if mapKey in standardsMap}
+            {#each Array.from(standardsMap[mapKey].entries()) as [norm, name]}
+              <option value={norm}>{norm} - {name}</option>
+            {/each}
+          {/if}
         {/if}
       </select>
     </div>
