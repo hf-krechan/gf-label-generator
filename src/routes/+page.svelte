@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment';
+  import { onDestroy } from 'svelte';
 
   // Physical dimensions including margins
   const PHYSICAL_WIDTH = 38;  // Already includes margins
@@ -57,13 +58,6 @@
   // Add localStorage save for strength class
   $: if (browser && strengthClass) localStorage.setItem('strengthClass', strengthClass);
 
-  // Save individual values when they change
-  $: if (browser && selectedPart) localStorage.setItem('selectedPart', selectedPart);
-  $: if (browser && threadSize) localStorage.setItem('threadSize', threadSize);
-  $: if (browser && length) localStorage.setItem('length', length);
-  $: if (browser && standard) localStorage.setItem('standard', standard);
-  $: if (browser && material) localStorage.setItem('material', material);
-  
   // Save margin values as strings in localStorage
   $: if (browser) localStorage.setItem('horizontalMargin', horizontalMargin.toString());
   $: if (browser) localStorage.setItem('verticalMargin', verticalMargin.toString());
@@ -84,11 +78,10 @@
   $: screwYPosition = SVG_HEIGHT / 2 - (EFFECTIVE_SCREW_HEIGHT / 2);
 
   // Reactive statement for preview
-  $: showPreview = selectedPart === 'Screw' && 
-                   Boolean(threadSize) && 
-                   Boolean(length) && 
-                   Boolean(standard) && 
-                   Boolean(material);
+  $: showPreview = (
+    (selectedPart === 'Screw' && Boolean(threadSize) && Boolean(length) && Boolean(standard) && Boolean(material)) ||
+    (selectedPart === 'Nut' && Boolean(threadSize) && Boolean(standard) && Boolean(material))
+  );
 
   // Replace the materials array with a material map
   const materialMap = new Map([
@@ -98,19 +91,39 @@
     ['BO', 'Black Oxide Steel']
   ]);
 
-  // Replace the standards array with a standards map
-  const standardsMap = new Map([
-    ['DIN 912', 'Socket Head Cap Screw'],
-    ['DIN 933', 'Hex Head Screw'],
-    ['ISO 4762', 'Socket Head Cap Screw'],
-    ['ISO 4014', 'Hex Head Screw']
-  ]);
+  // Replace the standards map with separate maps for screws and nuts
+  const standardsMap = {
+    screws: new Map([
+      ['DIN 912', 'Socket Head Cap Screw'],
+      ['DIN 933', 'Hex Head Screw'],
+      ['ISO 4762', 'Socket Head Cap Screw'],
+      ['ISO 4014', 'Hex Head Screw']
+    ]),
+    nuts: new Map([
+      ['DIN 934', 'Hex Nut'],
+      ['DIN 985', 'Nylon Insert Lock Nut'],
+      ['DIN 439', 'Thin Hex Nut'],
+      ['DIN 936', 'Low Hex Nut'],
+      ['DIN 1587', 'Domed Cap Nut (High Form)'],
+      ['DIN 986', 'Nylon Insert Lock Nut'],
+      ['DIN 917', 'Low Domed Cap Nut'],
+      ['DIN 928', 'Square Weld Nut'],
+      ['DIN 929', 'Hex Weld Nut']
+    ])
+  };
 
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
-    if (selectedPart === 'Screw' && threadSize && length) {
+    if (!threadSize) return '';
+    
+    if (selectedPart === 'Screw' && length) {
       return `${threadSize}x${length}`;
     }
+    
+    if (selectedPart === 'Nut') {
+      return threadSize;
+    }
+    
     return '';
   }
 
@@ -125,21 +138,20 @@
     return `${material} - ${strengthClass}`;
   }
 
-  // Function to get the correct SVG path based on the standard
-  function getScrewImagePath(standard: string): string {
+  // Update function name and logic to handle both part types
+  function getPartImagePath(standard: string, partType: string): string {
     const standardLower = standard.toLowerCase().replace(' ', '');
-    return `/images/screws/${standardLower}.svg`;
+    return `/images/${partType.toLowerCase()}s/${standardLower}.svg`;
   }
 
   // Add a variable to store the SVG content
   let screwSvgContent = '';
 
-  // Modify the function to fetch SVG content
-  async function fetchScrewSvg(standard: string) {
+  // Update the fetch function
+  async function fetchPartSvg(standard: string) {
     try {
-      const response = await fetch(getScrewImagePath(standard));
+      const response = await fetch(getPartImagePath(standard, selectedPart));
       const svgText = await response.text();
-      // Extract the content inside the svg tags
       const match = svgText.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
       screwSvgContent = match ? match[1] : '';
     } catch (error) {
@@ -149,7 +161,7 @@
 
   // Watch standard changes to update SVG content
   $: if (standard) {
-    fetchScrewSvg(standard);
+    fetchPartSvg(standard);
   }
 
   // Update the download function to be simpler
@@ -243,6 +255,120 @@
         return [];
     }
   }
+
+  // First, let's define our types
+  interface PartData {
+    threadSize: string;
+    standard: string;
+    material: string;
+  }
+
+  interface ScrewData extends PartData {
+    length: string;
+    strengthClass: string;
+  }
+
+  interface NutData extends PartData {
+    // Add nut-specific fields here if needed
+  }
+
+  interface WasherData extends PartData {
+    // Add washer-specific fields here if needed
+  }
+
+  // Create a type-safe storage manager
+  class PartStorageManager {
+    private getStorageKey(partType: string): string {
+      return `part_${partType.toLowerCase()}_data`;
+    }
+
+    save(partType: string, data: PartData | ScrewData | NutData | WasherData): void {
+      if (browser) {
+        localStorage.setItem(this.getStorageKey(partType), JSON.stringify(data));
+      }
+    }
+
+    load(partType: string): PartData | ScrewData | NutData | WasherData | null {
+      if (!browser) return null;
+      
+      const stored = localStorage.getItem(this.getStorageKey(partType));
+      if (!stored) return null;
+      
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  // Initialize the storage manager
+  const storageManager = new PartStorageManager();
+
+  // Update the state management
+  let currentData: PartData | ScrewData | NutData | WasherData = {
+    threadSize: '',
+    standard: '',
+    material: '',
+    length: '',
+    strengthClass: ''
+  };
+
+  // Update the watch for part type changes
+  $: if (selectedPart) {
+    // Load data for new part type first
+    const loadedData = storageManager.load(selectedPart);
+    if (loadedData) {
+      // Update individual bindings
+      threadSize = loadedData.threadSize || '';
+      standard = loadedData.standard || '';
+      material = loadedData.material || '';
+      
+      if ('length' in loadedData) {
+        length = loadedData.length || '';
+      }
+      if ('strengthClass' in loadedData) {
+        strengthClass = loadedData.strengthClass || '';
+      }
+      
+      // Update currentData after loading
+      currentData = loadedData;
+    } else {
+      // Reset to empty state for new part type
+      threadSize = '';
+      standard = '';
+      material = '';
+      length = '';
+      strengthClass = '';
+      
+      currentData = {
+        threadSize: '',
+        standard: '',
+        material: '',
+        length: '',
+        strengthClass: ''
+      };
+    }
+  }
+
+  // Separate reactive statement for saving changes
+  $: if (browser && selectedPart && threadSize) {
+    currentData = {
+      ...currentData,
+      threadSize,
+      standard,
+      material,
+      ...(selectedPart === 'Screw' ? { length, strengthClass } : {})
+    };
+    storageManager.save(selectedPart, currentData);
+  }
+
+  // Add this to handle component cleanup
+  onDestroy(() => {
+    if (selectedPart && (currentData.threadSize || currentData.material || currentData.standard)) {
+      storageManager.save(selectedPart, currentData);
+    }
+  });
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -258,7 +384,7 @@
     </select>
   </div>
 
-  {#if selectedPart === 'Screw'}
+  {#if selectedPart === 'Screw' || selectedPart === 'Nut'}
     <div class="mb-4">
       <label for="thread-size" class="mb-2 block font-medium text-gray-700">Select Thread Size:</label>
       <select id="thread-size" bind:value={threadSize} class="w-full rounded border border-gray-300 p-2 text-base">
@@ -269,41 +395,45 @@
       </select>
     </div>
 
-    <div class="mb-4">
-      <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
-      <input 
-        id="length"
-        type="number"
-        min="1"
-        step="1"
-        bind:value={length}
-        on:beforeinput={(e) => {
-          if (!/^\d*$/.test(e.data || '')) {
-            e.preventDefault();
-            lengthHelper = 'Only numbers allowed';
-          } else {
-            lengthHelper = '';
-          }
-        }}
-        placeholder="Enter length in mm"
-        class="w-full rounded border border-gray-300 p-2 text-base {lengthError ? 'border-red-500' : ''}"
-        aria-invalid={Boolean(lengthError)}
-      />
-      {#if lengthHelper}
-        <p class="mt-1 text-sm text-gray-500">{lengthHelper}</p>
-      {/if}
-      {#if lengthError}
-        <p class="mt-1 text-sm text-red-600">{lengthError}</p>
-      {/if}
-    </div>
+    {#if selectedPart === 'Screw'}
+      <div class="mb-4">
+        <label for="length" class="mb-2 block font-medium text-gray-700">Screw Length (mm):</label>
+        <input 
+          id="length"
+          type="number"
+          min="1"
+          step="1"
+          bind:value={length}
+          on:beforeinput={(e) => {
+            if (!/^\d*$/.test(e.data || '')) {
+              e.preventDefault();
+              lengthHelper = 'Only numbers allowed';
+            } else {
+              lengthHelper = '';
+            }
+          }}
+          placeholder="Enter length in mm"
+          class="w-full rounded border border-gray-300 p-2 text-base {lengthError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(lengthError)}
+        />
+        {#if lengthHelper}
+          <p class="mt-1 text-sm text-gray-500">{lengthHelper}</p>
+        {/if}
+        {#if lengthError}
+          <p class="mt-1 text-sm text-red-600">{lengthError}</p>
+        {/if}
+      </div>
+    {/if}
 
     <div class="mb-4">
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#each Array.from(standardsMap.entries()) as [norm, name]}
-          <option value={norm}>{norm} - {name}</option>
-        {/each}
+        {#if selectedPart && (selectedPart === 'Screw' || selectedPart === 'Nut')}
+          {#each Array.from(standardsMap[`${selectedPart.toLowerCase()}s`].entries()) as [norm, name]}
+            <option value={norm}>{norm} - {name}</option>
+          {/each}
+        {/if}
       </select>
     </div>
 
@@ -317,23 +447,24 @@
       </select>
     </div>
 
-    <!-- Add after the material select element -->
-    <div class="mb-4">
-      <label for="strength" class="mb-2 block font-medium text-gray-700">Select Strength Class:</label>
-      <select 
-        id="strength" 
-        bind:value={strengthClass} 
-        class="w-full rounded border border-gray-300 p-2 text-base"
-        disabled={!material}
-      >
-        <option value="">Choose strength class...</option>
-        {#each getStrengthClassesForMaterial(material) as sc}
-          <option value={sc}>{sc}</option>
-        {/each}
-      </select>
-    </div>
+    {#if selectedPart === 'Screw'}
+      <div class="mb-4">
+        <label for="strength" class="mb-2 block font-medium text-gray-700">Select Strength Class:</label>
+        <select 
+          id="strength" 
+          bind:value={strengthClass} 
+          class="w-full rounded border border-gray-300 p-2 text-base"
+          disabled={!material}
+        >
+          <option value="">Choose strength class...</option>
+          {#each getStrengthClassesForMaterial(material) as sc}
+            <option value={sc}>{sc}</option>
+          {/each}
+        </select>
+      </div>
+    {/if}
 
-    <!-- Add after the length input, but before the preview section -->
+    <!-- After the part-specific fields (strength class) but before preview -->
     <div class="flex gap-4 mb-4">
       <div class="flex-1">
         <label for="horizontal-margin" class="mb-2 block font-medium text-gray-700">Horizontal Margin (mm):</label>
@@ -433,7 +564,6 @@
       </label>
     </div>
   {/if}
-
 
   {#if showPreview}
     <div class="mt-8 rounded border border-gray-300 bg-white p-4">
