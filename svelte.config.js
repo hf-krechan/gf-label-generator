@@ -14,6 +14,7 @@ const config = {
 	preprocess: [vitePreprocess(), mdsvex()],
 
 	kit: {
+		appDir: 'app',
 		adapter: adapter(),
 		paths: {
 			base: basePath
