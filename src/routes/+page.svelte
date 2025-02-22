@@ -353,6 +353,106 @@
         </select>
       </div>
     {/if}
+
+    <!-- After the part-specific fields (strength class) but before preview -->
+    <div class="flex gap-4 mb-4">
+      <div class="flex-1">
+        <label for="horizontal-margin" class="mb-2 block font-medium text-gray-700">Horizontal Margin (mm):</label>
+        <input 
+          id="horizontal-margin"
+          type="number"
+          min="0"
+          max="30"
+          step="1"
+          bind:value={horizontalMargin}
+          on:beforeinput={(e) => {
+            if (!/^\d*$/.test(e.data || '')) {
+              e.preventDefault();
+              horizontalMarginHelper = 'Only numbers allowed';
+            } else {
+              horizontalMarginHelper = '';
+            }
+          }}
+          placeholder="Left/Right margin"
+          class="w-full rounded border border-gray-300 p-2 text-base {horizontalMarginError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(horizontalMarginError)}
+        />
+        {#if horizontalMarginHelper}
+          <p class="mt-1 text-sm text-gray-500">{horizontalMarginHelper}</p>
+        {/if}
+        {#if horizontalMarginError}
+          <p class="mt-1 text-sm text-red-600">{horizontalMarginError}</p>
+        {/if}
+      </div>
+      <div class="flex-1">
+        <label for="vertical-margin" class="mb-2 block font-medium text-gray-700">Vertical Margin (mm):</label>
+        <input 
+          id="vertical-margin"
+          type="number"
+          min="0"
+          max="30"
+          step="1"
+          bind:value={verticalMargin}
+          on:input={(e) => {
+            const value = e.currentTarget.value;
+            if (!/^\d*$/.test(value)) {
+              verticalMarginHelper = 'Only numbers allowed';
+            } else {
+              verticalMarginHelper = '';
+            }
+          }}
+          placeholder="Top/Bottom margin"
+          class="w-full rounded border border-gray-300 p-2 text-base {verticalMarginError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(verticalMarginError)}
+        />
+        {#if verticalMarginHelper}
+          <p class="mt-1 text-sm text-gray-500">{verticalMarginHelper}</p>
+        {/if}
+        {#if verticalMarginError}
+          <p class="mt-1 text-sm text-red-600">{verticalMarginError}</p>
+        {/if}
+      </div>
+      <div class="flex-1">
+        <label for="text-gap" class="mb-2 block font-medium text-gray-700">Text Gap (mm):</label>
+        <input 
+          id="text-gap"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={textGap}
+          on:beforeinput={(e) => {
+            if (!/^\d*$/.test(e.data || '')) {
+              e.preventDefault();
+              textGapHelper = 'Only numbers allowed';
+            } else {
+              textGapHelper = '';
+            }
+          }}
+          placeholder="Text distance"
+          class="w-full rounded border border-gray-300 p-2 text-base {textGapError ? 'border-red-500' : ''}"
+          aria-invalid={Boolean(textGapError)}
+        />
+        {#if textGapHelper}
+          <p class="mt-1 text-sm text-gray-500">{textGapHelper}</p>
+        {/if}
+        {#if textGapError}
+          <p class="mt-1 text-sm text-red-600">{textGapError}</p>
+        {/if}
+      </div>
+    </div>
+
+    <!-- Add after the margin inputs -->
+    <div class="mb-4">
+      <label class="flex items-center gap-2">
+        <input 
+          type="checkbox" 
+          bind:checked={showMargins}
+          class="h-4 w-4 rounded border-gray-300"
+        />
+        <span class="font-medium text-gray-700">Show margins</span>
+      </label>
+    </div>
   {/if}
 
   {#if showPreview}
