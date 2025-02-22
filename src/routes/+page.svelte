@@ -93,47 +93,53 @@
     ['BO', 'Black Oxide Steel']
   ]);
 
-  // Add this before the standardsMap definition to help with type checking
-  type PartTypes = 'screws' | 'nuts' | 'washers';
-
-  // Add some console logging to debug the map access
-  $: console.log('Selected Part:', selectedPart);
-  $: console.log('Map Key:', selectedPart?.toLowerCase() + 's');
-  $: console.log('Available Keys:', Object.keys(standardsMap));
-
   // Replace the standards map with separate maps for screws, nuts, and washers
-  const standardsMap = {
-    screws: new Map([
-      ['DIN 912', 'Socket Head Cap Screw'],
-      ['DIN 933', 'Hex Head Screw'],
-      ['ISO 4762', 'Socket Head Cap Screw'],
-      ['ISO 4014', 'Hex Head Screw']
-    ]),
-    nuts: new Map([
-      ['DIN 934', 'Hex Nut'],
-      ['DIN 985', 'Nylon Insert Lock Nut'],
-      ['DIN 439', 'Thin Hex Nut'],
-      ['DIN 936', 'Low Hex Nut'],
-      ['DIN 1587', 'Domed Cap Nut (High Form)'],
-      ['DIN 986', 'Nylon Insert Lock Nut'],
-      ['DIN 917', 'Low Domed Cap Nut'],
-      ['DIN 928', 'Square Weld Nut'],
-      ['DIN 929', 'Hex Weld Nut']
-    ]),
-    washers: new Map([
-      ['DIN 125', 'Flat Washer'],
-      ['DIN 1052', 'Flat Washer'],
-      ['DIN 127', 'Split Lock Washer'],
-      ['DIN 9021', 'Large Flat Washer'],
-      ['DIN 433', 'Reduced Outer Diameter Washer'],
-      ['DIN 7349', 'Thick Flat Washer'],
-      ['DIN 6916', 'HV Washer (Structural Bolting)'],
-      ['DIN 6796', 'Conical Spring Washer (Belleville)'],
-      ['DIN 137A', 'Curved Spring Washer'],
-      ['DIN 137B', 'Wave Spring Washer'],
-      ['DIN 7980', 'Spring Lock Washer for Socket Screws']
-    ])
-  };
+  const screwStandardsMap = new Map([
+    ['DIN 912', 'Socket Head Cap Screw'],
+    ['DIN 933', 'Hex Head Screw'],
+    ['ISO 4762', 'Socket Head Cap Screw'],
+    ['ISO 4014', 'Hex Head Screw']
+  ]);
+
+  const nutStandardsMap = new Map([
+    ['DIN 934', 'Hex Nut'],
+    ['DIN 985', 'Nylon Insert Lock Nut'],
+    ['DIN 439', 'Thin Hex Nut'],
+    ['DIN 936', 'Low Hex Nut'],
+    ['DIN 1587', 'Domed Cap Nut (High Form)'],
+    ['DIN 986', 'Nylon Insert Lock Nut'],
+    ['DIN 917', 'Low Domed Cap Nut'],
+    ['DIN 928', 'Square Weld Nut'],
+    ['DIN 929', 'Hex Weld Nut']
+  ]);
+
+  const washerStandardsMap = new Map([
+    ['DIN 125', 'Flat Washer'],
+    ['DIN 1052', 'Flat Washer'],
+    ['DIN 127', 'Split Lock Washer'],
+    ['DIN 9021', 'Large Flat Washer'],
+    ['DIN 433', 'Reduced Outer Diameter Washer'],
+    ['DIN 7349', 'Thick Flat Washer'],
+    ['DIN 6916', 'HV Washer (Structural Bolting)'],
+    ['DIN 6796', 'Conical Spring Washer (Belleville)'],
+    ['DIN 137A', 'Curved Spring Washer'],
+    ['DIN 137B', 'Wave Spring Washer'],
+    ['DIN 7980', 'Spring Lock Washer for Socket Screws']
+  ]);
+
+  // Add a helper function to get the correct standards map
+  function getStandardsMap(partType: string): Map<string, string> {
+    switch (partType) {
+      case 'Screw':
+        return screwStandardsMap;
+      case 'Nut':
+        return nutStandardsMap;
+      case 'Washer':
+        return washerStandardsMap;
+      default:
+        return new Map();
+    }
+  }
 
   // Function to generate the label text (e.g., "M6x25")
   function getLabelText() {
@@ -392,6 +398,12 @@
       storageManager.save(selectedPart, currentData);
     }
   });
+
+  // Optional: Add new debug logging for the current setup
+  $: console.log('Selected Part:', selectedPart);
+  $: if (selectedPart) {
+    console.log('Available Standards:', Array.from(getStandardsMap(selectedPart).keys()));
+  }
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -453,12 +465,9 @@
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
         {#if selectedPart}
-          {@const mapKey = `${selectedPart.toLowerCase()}s` as PartTypes}
-          {#if mapKey in standardsMap}
-            {#each Array.from(standardsMap[mapKey].entries()) as [norm, name]}
-              <option value={norm}>{norm} - {name}</option>
-            {/each}
-          {/if}
+          {#each Array.from(getStandardsMap(selectedPart).entries()) as [norm, name]}
+            <option value={norm}>{norm} - {name}</option>
+          {/each}
         {/if}
       </select>
     </div>
