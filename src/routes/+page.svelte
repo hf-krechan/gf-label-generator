@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment';
+  import { onDestroy } from 'svelte';
 
   // Physical dimensions including margins
   const PHYSICAL_WIDTH = 38;  // Already includes margins
@@ -261,6 +262,123 @@
         return [];
     }
   }
+
+  // First, let's define our types
+  interface PartData {
+    threadSize: string;
+    standard: string;
+    material: string;
+  }
+
+  interface ScrewData extends PartData {
+    length: string;
+    strengthClass: string;
+  }
+
+  interface NutData extends PartData {
+    // Add nut-specific fields here if needed
+  }
+
+  interface WasherData extends PartData {
+    // Add washer-specific fields here if needed
+  }
+
+  // Create a type-safe storage manager
+  class PartStorageManager {
+    private getStorageKey(partType: string): string {
+      return `part_${partType.toLowerCase()}_data`;
+    }
+
+    save(partType: string, data: PartData | ScrewData | NutData | WasherData): void {
+      if (browser) {
+        localStorage.setItem(this.getStorageKey(partType), JSON.stringify(data));
+      }
+    }
+
+    load(partType: string): PartData | ScrewData | NutData | WasherData | null {
+      if (!browser) return null;
+      
+      const stored = localStorage.getItem(this.getStorageKey(partType));
+      if (!stored) return null;
+      
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  // Initialize the storage manager
+  const storageManager = new PartStorageManager();
+
+  // Update the state management
+  let currentData: PartData | ScrewData | NutData | WasherData = {
+    threadSize: '',
+    standard: '',
+    material: '',
+    length: '',
+    strengthClass: ''
+  };
+
+  // Watch for part type changes
+  $: if (selectedPart) {
+    // Save current data before switching
+    if (currentData.threadSize || currentData.material || currentData.standard) {
+      storageManager.save(selectedPart, currentData);
+    }
+    
+    // Load data for new part type
+    const loadedData = storageManager.load(selectedPart);
+    if (loadedData) {
+      currentData = loadedData;
+      // Update individual bindings
+      threadSize = loadedData.threadSize;
+      standard = loadedData.standard;
+      material = loadedData.material;
+      
+      if ('length' in loadedData) {
+        length = loadedData.length;
+      }
+      if ('strengthClass' in loadedData) {
+        strengthClass = loadedData.strengthClass;
+      }
+    } else {
+      // Reset to empty state for new part type
+      currentData = {
+        threadSize: '',
+        standard: '',
+        material: '',
+        length: '',
+        strengthClass: ''
+      };
+      // Reset individual bindings
+      threadSize = '';
+      standard = '';
+      material = '';
+      length = '';
+      strengthClass = '';
+    }
+  }
+
+  // Update the save logic for individual fields
+  $: if (browser && selectedPart) {
+    currentData = {
+      ...currentData,
+      threadSize,
+      standard,
+      material,
+      ...(selectedPart === 'Screw' ? { length, strengthClass } : {})
+    };
+    storageManager.save(selectedPart, currentData);
+  }
+
+  // Add this to handle component cleanup
+  onDestroy(() => {
+    if (selectedPart && (currentData.threadSize || currentData.material || currentData.standard)) {
+      storageManager.save(selectedPart, currentData);
+    }
+  });
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -321,9 +439,11 @@
       <label for="standard" class="mb-2 block font-medium text-gray-700">Select Standard:</label>
       <select id="standard" bind:value={standard} class="w-full rounded border border-gray-300 p-2 text-base">
         <option value="">Choose standard...</option>
-        {#each Array.from(standardsMap[selectedPart.toLowerCase() + 's'].entries()) as [norm, name]}
-          <option value={norm}>{norm} - {name}</option>
-        {/each}
+        {#if selectedPart && (selectedPart === 'Screw' || selectedPart === 'Nut')}
+          {#each Array.from(standardsMap[`${selectedPart.toLowerCase()}s`].entries()) as [norm, name]}
+            <option value={norm}>{norm} - {name}</option>
+          {/each}
+        {/if}
       </select>
     </div>
 
