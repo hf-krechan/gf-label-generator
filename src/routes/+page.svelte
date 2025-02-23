@@ -216,11 +216,6 @@
     }
   }
 
-  // Watch standard changes to update SVG content
-  $: if (standard) {
-    fetchPartSvg(standard);
-  }
-
   // Update the download function to be simpler
   async function downloadSVG() {
     const svgElement = document.querySelector('.preview-svg');
@@ -743,6 +738,7 @@
         {#if screwSvgContent}
           <g 
             transform="translate({screwXPosition} {screwYPosition}) scale({SCREW_SCALE})"
+            style="stroke-width: {strokeWidth}"
           >
             {@html screwSvgContent}
           </g>
