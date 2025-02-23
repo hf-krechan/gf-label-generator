@@ -176,21 +176,44 @@
   // Add a variable to store the SVG content
   let screwSvgContent = '';
 
-  // Update the fetch function
+  // Add stroke width state with localStorage
+  let strokeWidth = browser ? Number(localStorage.getItem('strokeWidth')) || 1.05833 : 1.05833;
+
+  // Save stroke width preference
+  $: if (browser) localStorage.setItem('strokeWidth', strokeWidth.toString());
+
+  // First, I'll update the reactive statement to watch both standard and strokeWidth changes
+  $: if (standard && strokeWidth) {
+    fetchPartSvg(standard);
+  }
+
+  // Then, I'll modify the adjustStrokeWidth function to be more thorough
+  function adjustStrokeWidth(svgContent: string, width: number): string {
+    // Handle both attribute and style-based stroke widths
+    return svgContent
+        .replace(/stroke-width="[^"]*"/g, `stroke-width="${width}"`)
+        .replace(/stroke-width:\s*[^;}"']*[;}"']/g, `stroke-width:${width}`)
+        .replace(/strokeWidth="[^"]*"/g, `strokeWidth="${width}"`);
+  }
+
+  // Update the fetch function to apply stroke width
   async function fetchPartSvg(standard: string) {
     try {
       const response = await fetch(getPartImagePath(standard, selectedPart));
       const svgText = await response.text();
       const match = svgText.match(/<svg[^>]*>([\s\S]*?)<\/svg>/);
-      screwSvgContent = match ? match[1] : '';
+      if (match) {
+        const adjusted = adjustStrokeWidth(match[1], strokeWidth);
+        console.log('Original SVG:', match[1]);
+        console.log('Adjusted SVG:', adjusted);
+        screwSvgContent = adjusted;
+      } else {
+        console.error('No SVG content found in response');
+        screwSvgContent = '';
+      }
     } catch (error) {
       console.error('Error loading SVG:', error);
     }
-  }
-
-  // Watch standard changes to update SVG content
-  $: if (standard) {
-    fetchPartSvg(standard);
   }
 
   // Update the download function to be simpler
@@ -238,12 +261,14 @@
   $: horizontalMarginError = horizontalMargin ? validateNumber(horizontalMargin.toString(), 0, 30) : '';
   $: verticalMarginError = verticalMargin ? validateNumber(verticalMargin.toString(), 0, 30) : '';
   $: textGapError = textGap ? validateNumber(textGap.toString(), 0, 100) : '';
+  $: strokeWidthError = strokeWidth ? validateNumber(strokeWidth.toString(), 0.1, 5) : '';
 
   // Add state for input helper text
   let lengthHelper = '';
   let horizontalMarginHelper = '';
   let verticalMarginHelper = '';
   let textGapHelper = '';
+  let strokeWidthHelper = '';
 
   // Update input handler to show/hide helper text
   function handleInput(event: Event, setter: (val: string) => void) {
@@ -259,6 +284,7 @@
     if (input.id === 'horizontal-margin') horizontalMarginHelper = helperText;
     if (input.id === 'vertical-margin') verticalMarginHelper = helperText;
     if (input.id === 'text-gap') textGapHelper = helperText;
+    if (input.id === 'stroke-width') strokeWidthHelper = helperText;
     
     setter(cleanValue);
   }
@@ -671,6 +697,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Add after the margin controls -->
+    <div class="mb-4">
+      <label for="stroke-width" class="mb-2 block font-medium text-gray-700">Line Thickness:</label>
+      <input 
+        id="stroke-width"
+        type="number"
+        min="0.1"
+        max="5"
+        step="0.1"
+        bind:value={strokeWidth}
+        placeholder="Line thickness"
+        class="w-full rounded border border-gray-300 p-2 text-base {strokeWidthError ? 'border-red-500' : ''}"
+        aria-invalid={Boolean(strokeWidthError)}
+      />
+      {#if strokeWidthHelper}
+        <p class="mt-1 text-sm text-gray-500">{strokeWidthHelper}</p>
+      {/if}
+      {#if strokeWidthError}
+        <p class="mt-1 text-sm text-red-600">{strokeWidthError}</p>
+      {/if}
+    </div>
   {/if}
 
   {#if showPreview}
@@ -690,6 +738,7 @@
         {#if screwSvgContent}
           <g 
             transform="translate({screwXPosition} {screwYPosition}) scale({SCREW_SCALE})"
+            style="stroke-width: {strokeWidth}"
           >
             {@html screwSvgContent}
           </g>
