@@ -404,6 +404,34 @@
   $: if (selectedPart) {
     console.log('Available Standards:', Array.from(getStandardsMap(selectedPart).keys()));
   }
+
+  // Add available fonts
+  const availableFonts = [
+    'Arimo',
+    'Noto Sans',
+    'Radio Canada',
+    'Roboto'
+  ];
+
+  // Add font selection with localStorage
+  let selectedFont = browser ? localStorage.getItem('selectedFont') || 'Roboto' : 'Roboto';
+
+  // Save font selection
+  $: if (browser) localStorage.setItem('selectedFont', selectedFont);
+
+  // Add font weight options
+  const fontWeights = [
+    { value: '400', label: 'Regular' },
+    { value: '500', label: 'Medium' },
+    { value: '600', label: 'Semi Bold' },
+    { value: '700', label: 'Bold' }
+  ];
+
+  // Add font weight selection with localStorage
+  let selectedFontWeight = browser ? localStorage.getItem('selectedFontWeight') || '400' : '400';
+
+  // Save font weight selection
+  $: if (browser) localStorage.setItem('selectedFontWeight', selectedFontWeight);
 </script>
 
 <main class="container mx-auto max-w-2xl p-8">
@@ -598,6 +626,26 @@
         <span class="font-medium text-gray-700">Show margins</span>
       </label>
     </div>
+
+    <!-- Add font selector after the margin controls -->
+    <div class="flex gap-4 mb-4">
+      <div class="flex-1">
+        <label for="font-family" class="mb-2 block font-medium text-gray-700">Select Font:</label>
+        <select id="font-family" bind:value={selectedFont} class="w-full rounded border border-gray-300 p-2 text-base">
+          {#each availableFonts as font}
+            <option value={font}>{font}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="flex-1">
+        <label for="font-weight" class="mb-2 block font-medium text-gray-700">Font Weight:</label>
+        <select id="font-weight" bind:value={selectedFontWeight} class="w-full rounded border border-gray-300 p-2 text-base">
+          {#each fontWeights as {value, label}}
+            <option value={value}>{label}</option>
+          {/each}
+        </select>
+      </div>
+    </div>
   {/if}
 
   {#if showPreview}
@@ -633,12 +681,12 @@
             x={STANDARD_BOX_WIDTH/2}
             y={effectiveHeight/2} 
             font-size={STANDARD_FONT_SIZE}
-            font-weight="bold" 
+            font-weight={selectedFontWeight}
             fill="white" 
             text-anchor="middle"
             dominant-baseline="middle"
             transform={`rotate(-90, ${STANDARD_BOX_WIDTH/2}, ${effectiveHeight/2})`}
-            font-family="Verdana"
+            font-family="{selectedFont}"
           >{standard}</text>
         </g>
 
@@ -647,15 +695,16 @@
           x={textXPosition}
           y={verticalMargin * 10 + 40} 
           font-size={LABEL_FONT_SIZE}
-          font-weight="bold" 
-          font-family="Verdana"
+          font-weight={selectedFontWeight}
+          font-family="{selectedFont}"
           text-anchor="end"
         >{getLabelText()}</text>
         <text 
           x={textXPosition}
           y={verticalMargin * 10 + 90} 
           font-size={MATERIAL_FONT_SIZE}
-          font-family="Verdana"
+          font-weight={selectedFontWeight}
+          font-family="{selectedFont}"
           text-anchor="end"
         >{getMaterialText()}</text>
 
